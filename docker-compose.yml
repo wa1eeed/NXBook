@@ -32,9 +32,7 @@ services:
   workers:
     build:
       context: .
-      dockerfile: Dockerfile
-      target: runner
-    command: ["node", "dist/workers/index.js"]
+      dockerfile: Dockerfile.workers
     env_file:
       - .env.${NODE_ENV:-production}
     environment:

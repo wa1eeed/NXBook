@@ -1,0 +1,28 @@
+# ============================================================
+# Dockerfile.workers — BullMQ workers + cron jobs
+# Runs src/workers/index.ts via tsx (no compilation needed).
+# Deploy as a separate Coolify service pointing to this file.
+# ============================================================
+
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY prisma ./prisma
+RUN NODE_ENV=development npm ci --frozen-lockfile
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY prisma ./prisma
+COPY src ./src
+COPY tsconfig.json ./
+
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser  --system --uid 1001 worker
+
+USER worker
+
+CMD ["node_modules/.bin/tsx", "src/workers/index.ts"]
