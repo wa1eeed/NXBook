@@ -67,7 +67,7 @@ async function deduct(businessId: string, costSar: number, meta: {
         description: `${meta.agentType} — ${meta.model}`,
         provider: meta.provider === "anthropic" ? AIProvider.ANTHROPIC : AIProvider.OPENAI,
         model: meta.model, inputTokens: meta.inputTokens, outputTokens: meta.outputTokens,
-        agentType: meta.agentType as any,
+        agentType: meta.agentType as import("@prisma/client").AgentType,
       }
     })
   })
@@ -119,7 +119,7 @@ export async function callAI(params: AICallParams): Promise<AIResult> {
 
     return { text, provider, model, inputTokens, outputTokens, costSar }
 
-  } catch (err: any) {
+  } catch (err) {
     Sentry.captureException(err, { extra: { businessId, agentType, provider, model } })
     throw err
   }

@@ -56,11 +56,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user, trigger }) {
       if (user) {
-        token.id = user.id
-        token.role = (user as any).role
-        token.businessId = (user as any).businessId
-        token.businessSlug = (user as any).businessSlug
-        token.onboardingDone = (user as any).onboardingDone
+        const u = user as typeof user & { role?: string; businessId?: string; businessSlug?: string; onboardingDone?: boolean }
+        token.id = u.id
+        token.role = u.role
+        token.businessId = u.businessId
+        token.businessSlug = u.businessSlug
+        token.onboardingDone = u.onboardingDone
       }
 
       // After onboarding the JWT still has businessId=null (it was minted at

@@ -57,9 +57,9 @@ export async function sendWhatsApp(params: SendWhatsAppParams): Promise<void> {
       body,
     })
     externalId = message.sid
-  } catch (err: any) {
+  } catch (err) {
     status = "failed"
-    error = err.message
+    error = (err instanceof Error ? err.message : String(err))
     Sentry.captureException(err, { extra: { businessId, type, to } })
     // Don't throw — log and continue
   }
@@ -93,9 +93,9 @@ export async function sendSMS(params: SendSMSParams): Promise<void> {
       body,
     })
     externalId = message.sid
-  } catch (err: any) {
+  } catch (err) {
     status = "failed"
-    error = err.message
+    error = (err instanceof Error ? err.message : String(err))
     Sentry.captureException(err, { extra: { businessId, type, to } })
   }
 
@@ -130,9 +130,9 @@ export async function sendEmail(params: SendEmailParams): Promise<void> {
       html,
     })
     externalId = result.data?.id
-  } catch (err: any) {
+  } catch (err) {
     status = "failed"
-    error = err.message
+    error = (err instanceof Error ? err.message : String(err))
     Sentry.captureException(err, { extra: { businessId, type, to } })
   }
 

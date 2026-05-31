@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState, useTransition } from "react"
+import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import toast from "react-hot-toast"
@@ -131,10 +132,10 @@ export function NewBookingClient({
         title={t("newBooking")}
         action={
           <Button variant="outline" asChild>
-            <a href="/dashboard/bookings">
+            <Link href="/dashboard/bookings">
               <ArrowLeft className="size-4" />
               {t("cancel")}
-            </a>
+            </Link>
           </Button>
         }
       />

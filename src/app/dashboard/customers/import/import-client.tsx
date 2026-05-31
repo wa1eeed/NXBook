@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import toast from "react-hot-toast"
@@ -137,10 +138,10 @@ export function ImportClient() {
         description={t("importSubtitle")}
         action={
           <Button variant="outline" asChild>
-            <a href="/dashboard/customers">
+            <Link href="/dashboard/customers">
               <ArrowLeft className="size-4" />
               {t("title")}
-            </a>
+            </Link>
           </Button>
         }
       />
@@ -219,7 +220,7 @@ export function ImportClient() {
                 })}
               </p>
               <Button asChild>
-                <a href="/dashboard/customers">{t("title")}</a>
+                <Link href="/dashboard/customers">{t("title")}</Link>
               </Button>
             </div>
           )}

@@ -9,6 +9,7 @@
 // are stored encrypted (crypto.ts) and resolved per businessId.
 // ============================================================
 
+import { createHmac } from "crypto"
 import { prisma } from "./prisma"
 import { decryptSecret } from "./crypto"
 
@@ -107,7 +108,6 @@ class MoyasarProvider extends PaymentProvider {
   }
 
   verifyWebhookSignature(payload: string, sig: string): boolean {
-    const { createHmac } = require("crypto")
     const expected = createHmac("sha256", this.webhookSecret).update(payload).digest("hex")
     return expected === sig
   }
@@ -171,7 +171,6 @@ class TapProvider extends PaymentProvider {
   }
 
   verifyWebhookSignature(payload: string, sig: string): boolean {
-    const { createHmac } = require("crypto")
     const expected = createHmac("sha256", this.webhookSecret).update(payload).digest("hex")
     return expected === sig
   }

@@ -3,6 +3,7 @@
 // Handles: subscriptions, credit top-up, webhooks
 // ============================================================
 
+import { createHmac } from "crypto"
 import { prisma } from "./prisma"
 import { Prisma } from "@prisma/client"
 import * as Sentry from "@sentry/nextjs"
@@ -105,13 +106,15 @@ export async function cancelSubscription(moyasarSubId: string) {
 
 // ─── Webhook Handler ──────────────────────────────────────
 
-export async function handleMoyasarWebhook(body: any): Promise<void> {
-  const { type, data } = body
+export async function handleMoyasarWebhook(body: Record<string, unknown>): Promise<void> {
+  const type = body.type as string | undefined
+  const data = (body.data ?? {}) as Record<string, unknown>
+  const dataId = typeof data.id === "string" ? data.id : undefined
 
   try {
     switch (type) {
       case "payment.paid": {
-        const meta = data.metadata ?? {}
+        const meta = (data.metadata ?? {}) as Record<string, string>
 
         if (meta.type === "credit_topup") {
           // Top-up credit account
@@ -141,7 +144,7 @@ export async function handleMoyasarWebhook(body: any): Promise<void> {
                 amount: amountSar,
                 balanceAfter: newBalance,
                 description: `شحن رصيد عبر Moyasar`,
-                moyasarTxId: data.id,
+                moyasarTxId: dataId,
               },
             })
           })
@@ -150,7 +153,7 @@ export async function handleMoyasarWebhook(body: any): Promise<void> {
         if (meta.type === "subscription_payment") {
           // Mark invoice paid
           await prisma.invoice.updateMany({
-            where: { moyasarTxId: data.id },
+            where: { moyasarTxId: dataId },
             data: { status: "paid", paidAt: new Date() },
           })
         }
@@ -158,7 +161,7 @@ export async function handleMoyasarWebhook(body: any): Promise<void> {
       }
 
       case "payment.failed": {
-        const meta = data.metadata ?? {}
+        const meta = (data.metadata ?? {}) as Record<string, string>
         if (meta.businessId) {
           // Mark subscription past_due if subscription payment fails
           if (meta.type === "subscription_payment") {
@@ -172,7 +175,7 @@ export async function handleMoyasarWebhook(body: any): Promise<void> {
       }
 
       case "subscription.deactivated": {
-        const moyasarSubId = data.id
+        const moyasarSubId = dataId
         await prisma.subscription.updateMany({
           where: { moyasarSubId },
           data: { status: "CANCELLED" },
@@ -192,10 +195,8 @@ export function verifyWebhookSignature(
   payload: string,
   signature: string
 ): boolean {
-  const crypto = require("crypto")
   const secret = process.env.MOYASAR_WEBHOOK_SECRET!
-  const expected = crypto
-    .createHmac("sha256", secret)
+  const expected = createHmac("sha256", secret)
     .update(payload)
     .digest("hex")
   return expected === signature

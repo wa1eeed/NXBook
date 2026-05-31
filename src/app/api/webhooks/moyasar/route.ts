@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     await handleMoyasarWebhook(JSON.parse(body))
     return NextResponse.json({ ok: true })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Unknown error" }, { status: 500 })
   }
 }
