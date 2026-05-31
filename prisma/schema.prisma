@@ -1,0 +1,658 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanTier {
+  STARTER
+  GROWTH
+  SCALE
+}
+
+enum BusinessType {
+  CLINIC
+  SALON
+  FITNESS
+  CONSULTING
+  EDUCATION
+  OTHER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  ATTENDED
+  NO_SHOW
+  CANCELLED
+}
+
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+}
+
+enum AgentType {
+  WAITLIST
+  FOLLOWUP
+  RECOVERY
+  ANALYTICS
+  MARKETING
+  SOCIAL_MEDIA
+  SUPPORT
+  REVIEW
+  CUSTOM
+}
+
+enum AgentStatus {
+  ACTIVE
+  PAUSED
+  ERROR
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  RETRYING
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  SMS
+  EMAIL
+}
+
+enum AIProvider {
+  ANTHROPIC
+  OPENAI
+}
+
+enum AIKeyType {
+  OWN_KEY
+  PLATFORM
+}
+
+enum CreditTxType {
+  TOPUP
+  USAGE
+  REFUND
+  BONUS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  TRIALING
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  OWNER
+  MANAGER
+  STAFF
+}
+
+enum Locale {
+  en
+  ar
+}
+
+enum DomainStatus {
+  PENDING
+  VERIFYING
+  VERIFIED
+  ACTIVE
+  FAILED
+}
+
+model PlatformConfig {
+  id                   String     @id @default(cuid())
+  defaultAIProvider    AIProvider @default(ANTHROPIC)
+  defaultModel         String     @default("claude-haiku-4-5")
+  fallbackModel        String     @default("gpt-4o-mini")
+  anthropicInputPrice  Float      @default(0.01)
+  anthropicOutputPrice Float      @default(0.03)
+  openaiInputPrice     Float      @default(0.008)
+  openaiOutputPrice    Float      @default(0.025)
+  platformMargin       Float      @default(1.5)
+  maintenanceMode      Boolean    @default(false)
+  maintenanceMessage   String?
+  trialPolicy          Json?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+}
+
+model User {
+  id           String           @id @default(cuid())
+  email        String           @unique
+  phone        String?
+  passwordHash String
+  role         UserRole         @default(STAFF)
+  isVerified   Boolean          @default(false)
+  verifyToken  String?
+  resetToken   String?
+  resetExpires DateTime?
+  lastLoginAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  businesses   BusinessMember[]
+  sessions     Session[]
+  @@index([email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([token])
+  @@index([userId])
+}
+
+model Business {
+  id             String             @id @default(cuid())
+  name           String
+  slug           String             @unique
+  type           BusinessType       @default(OTHER)
+  logoUrl        String?
+  phone          String?
+  email          String?
+  address        String?
+  city           String?
+  timezone       String             @default("Asia/Riyadh")
+  currency       String             @default("SAR")
+  defaultLocale  Locale             @default(en)
+  brandColor     String             @default("#0EA5E9")
+  themeConfig    Json?
+  isActive       Boolean            @default(true)
+  onboardingDone Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  members        BusinessMember[]
+  subscription   Subscription?
+  services       Service[]
+  staff          Staff[]
+  customers      Customer[]
+  bookings       Booking[]
+  waitlists      Waitlist[]
+  agents         Agent[]
+  agentLogs      AgentLog[]
+  aiConfig       BusinessAIConfig?
+  creditAccount  CreditAccount?
+  notifications  NotificationLog[]
+  reports        Report[]
+  holidays       BusinessHoliday[]
+  customDomains  CustomDomain[]
+  auditLogs      AuditLog[]
+  paymentEnabled    Boolean   @default(false)
+  paymentProvider   String?
+  paymentConfig     Json?
+  depositPercent    Int       @default(0)
+  cancellationHours Int       @default(24)
+  transactions      Transaction[]
+  paymentGateway    PaymentGateway?
+  @@index([slug])
+}
+
+model Transaction {
+  id            String    @id @default(cuid())
+  businessId    String
+  bookingId     String?
+  customerId    String?
+  amount        Float
+  currency      String    @default("SAR")
+  provider      String
+  providerRef   String?
+  status        String    @default("PENDING")
+  type          String    @default("BOOKING")
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  booking       Booking?  @relation(fields: [bookingId], references: [id])
+  customer      Customer? @relation(fields: [customerId], references: [id])
+  @@index([businessId])
+  @@index([bookingId])
+  @@index([status])
+}
+
+model PaymentGateway {
+  id            String    @id @default(cuid())
+  businessId    String    @unique
+  provider      String
+  isActive      Boolean   @default(false)
+  publicKey     String?
+  secretKey     String?
+  webhookSecret String?
+  config        Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+// Audit trail for sensitive actions (CLAUDE.md §7): role/domain/
+// billing/agent/booking-lifecycle changes + data exports. Recorded
+// with the acting user + timestamp; queried via the admin/audit views.
+model AuditLog {
+  id         String   @id @default(cuid())
+  businessId String?
+  actorId    String?
+  actorEmail String?
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+  business   Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@index([businessId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model CustomDomain {
+  id            String       @id @default(cuid())
+  businessId    String
+  domain        String       @unique
+  verifyToken   String
+  status        DomainStatus @default(PENDING)
+  sslStatus     String?
+  verifiedAt    DateTime?
+  lastCheckedAt DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  business      Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@index([businessId])
+  @@index([status])
+}
+
+model BusinessMember {
+  id         String   @id @default(cuid())
+  userId     String
+  businessId String
+  role       UserRole @default(STAFF)
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@unique([userId, businessId])
+  @@index([businessId])
+}
+
+model Plan {
+  id                  String         @id @default(cuid())
+  tier                PlanTier       @unique
+  nameAr              String
+  nameEn              String
+  priceMonthly        Float
+  priceYearly         Float
+  maxBookingsPerMonth Int
+  maxStaff            Int
+  maxServices         Int
+  includesAIAgents    Boolean        @default(false)
+  maxAgents           Int            @default(0)
+  features            Json
+  isActive            Boolean        @default(true)
+  trialDays           Int            @default(0)
+  isTrialUpgradeForced Boolean       @default(false)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  subscriptions       Subscription[]
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  businessId         String             @unique
+  planId             String
+  status             SubscriptionStatus @default(TRIALING)
+  trialEndsAt        DateTime?
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean            @default(false)
+  moyasarSubId       String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  business           Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  plan               Plan               @relation(fields: [planId], references: [id])
+  invoices           Invoice[]
+  @@index([status])
+}
+
+model Invoice {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  amount         Float
+  currency       String       @default("SAR")
+  status         String
+  moyasarTxId    String?
+  paidAt         DateTime?
+  createdAt      DateTime     @default(now())
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  @@index([subscriptionId])
+}
+
+model BusinessAIConfig {
+  id                String     @id @default(cuid())
+  businessId        String     @unique
+  keyType           AIKeyType  @default(PLATFORM)
+  anthropicKey      String?
+  openaiKey         String?
+  preferredProvider AIProvider @default(ANTHROPIC)
+  preferredModel    String     @default("claude-haiku-4-5")
+  fallbackModel     String?
+  agentModelMap     Json?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  business          Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model CreditAccount {
+  id           String       @id @default(cuid())
+  businessId   String       @unique
+  balance      Float        @default(0)
+  totalTopup   Float        @default(0)
+  totalUsed    Float        @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  business     Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  transactions CreditTx[]
+  @@index([businessId])
+}
+
+model CreditTx {
+  id              String        @id @default(cuid())
+  creditAccountId String
+  type            CreditTxType
+  amount          Float
+  balanceAfter    Float
+  description     String?
+  provider        AIProvider?
+  model           String?
+  inputTokens     Int?
+  outputTokens    Int?
+  agentType       AgentType?
+  moyasarTxId     String?
+  createdAt       DateTime      @default(now())
+  creditAccount   CreditAccount @relation(fields: [creditAccountId], references: [id], onDelete: Cascade)
+  @@index([creditAccountId])
+  @@index([createdAt])
+}
+
+model Service {
+  id           String                @id @default(cuid())
+  businessId   String
+  nameEn        String
+  nameAr        String?
+  descriptionEn String?
+  descriptionAr String?
+  durationMin  Int
+  bufferMin    Int                   @default(0)
+  price        Float
+  maxCapacity  Int                   @default(1)
+  imageUrl     String?
+  isActive     Boolean               @default(true)
+  isVisible    Boolean               @default(true)
+  sortOrder    Int                   @default(0)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  business     Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  availability ServiceAvailability[]
+  bookings     Booking[]
+  staffServices StaffService[]
+  @@index([businessId])
+}
+
+model ServiceAvailability {
+  id        String  @id @default(cuid())
+  serviceId String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  slotMin   Int
+  isActive  Boolean @default(true)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  @@index([serviceId])
+}
+
+model BusinessHoliday {
+  id         String   @id @default(cuid())
+  businessId String
+  date       DateTime
+  reason     String?
+  createdAt  DateTime @default(now())
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@index([businessId])
+}
+
+model Staff {
+  id         String         @id @default(cuid())
+  businessId String
+  name       String
+  phone      String?
+  email      String?
+  avatarUrl  String?
+  isActive   Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  business   Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  services   StaffService[]
+  bookings   Booking[]
+  leaves     StaffLeave[]
+  @@index([businessId])
+}
+
+model StaffService {
+  staffId   String
+  serviceId String
+  staff     Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  @@id([staffId, serviceId])
+}
+
+model StaffLeave {
+  id        String   @id @default(cuid())
+  staffId   String
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  @@index([staffId])
+}
+
+model Customer {
+  id             String     @id @default(cuid())
+  businessId     String
+  name           String
+  phone          String
+  email          String?
+  notes          String?
+  isBlocked      Boolean    @default(false)
+  blockReason    String?
+  noShowScore    Float      @default(0)
+  loyaltyScore   Float      @default(0)
+  isVIP          Boolean    @default(false)
+  totalSpent     Float      @default(0)
+  totalBookings  Int        @default(0)
+  totalNoShows   Int        @default(0)
+  lastVisitAt    DateTime?
+  lastRecoveryAt DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  business       Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  bookings       Booking[]
+  waitlists      Waitlist[]
+  transactions   Transaction[]
+  @@unique([businessId, phone])
+  @@index([businessId])
+  @@index([lastVisitAt])
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  businessId      String
+  serviceId       String
+  customerId      String
+  staffId         String?
+  date            DateTime
+  startTime       String
+  endTime         String
+  status          BookingStatus @default(PENDING)
+  notes           String?
+  confirmedAt     DateTime?
+  attendedAt      DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  reminder24Sent  Boolean       @default(false)
+  reminder1Sent   Boolean       @default(false)
+  followupSent    Boolean       @default(false)
+  followupSentAt  DateTime?
+  bookedVia       String        @default("landing_page")
+  paymentStatus     String?
+  paymentAmount     Float?
+  paymentReference  String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  business        Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  service         Service       @relation(fields: [serviceId], references: [id])
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  staff           Staff?        @relation(fields: [staffId], references: [id])
+  transactions    Transaction[]
+  @@index([businessId])
+  @@index([date])
+  @@index([status])
+  @@index([customerId])
+}
+
+model Waitlist {
+  id           String         @id @default(cuid())
+  businessId   String
+  serviceId    String
+  customerId   String
+  date         DateTime
+  slotTime     String
+  status       WaitlistStatus @default(WAITING)
+  position     Int
+  offeredAt    DateTime?
+  offerExpires DateTime?
+  confirmedAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  business     Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customer     Customer       @relation(fields: [customerId], references: [id])
+  @@index([businessId])
+  @@index([serviceId, date, slotTime])
+  @@index([status])
+}
+
+model Agent {
+  id              String      @id @default(cuid())
+  businessId      String
+  type            AgentType
+  name            String
+  isActive        Boolean     @default(true)
+  config          Json        @default("{}")
+  aiProvider      AIProvider?
+  aiModel         String?
+  totalRuns       Int         @default(0)
+  totalMessages   Int         @default(0)
+  totalTokensUsed Int         @default(0)
+  totalCostSar    Float       @default(0)
+  lastRunAt       DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  business        Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  logs            AgentLog[]
+  @@unique([businessId, type])
+  @@index([businessId])
+}
+
+model AgentLog {
+  id          String              @id @default(cuid())
+  businessId  String
+  agentId     String
+  agentType   AgentType
+  triggeredBy String
+  status      JobStatus           @default(PENDING)
+  provider    AIProvider?
+  model       String?
+  prompt      String?             @db.Text
+  response    String?             @db.Text
+  inputTokens Int?
+  outputTokens Int?
+  costSar     Float?
+  targetType  String?
+  targetId    String?
+  messageSent Boolean             @default(false)
+  channel     NotificationChannel?
+  error       String?             @db.Text
+  durationMs  Int?
+  createdAt   DateTime            @default(now())
+  business    Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  agent       Agent               @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  @@index([businessId])
+  @@index([agentId])
+  @@index([createdAt])
+}
+
+model NotificationTemplate {
+  id         String              @id @default(cuid())
+  businessId String?
+  type       String
+  channel    NotificationChannel
+  bodyAr     String              @db.Text
+  bodyEn     String?             @db.Text
+  isActive   Boolean             @default(true)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  @@index([businessId])
+  @@index([type])
+}
+
+model NotificationLog {
+  id         String              @id @default(cuid())
+  businessId String
+  channel    NotificationChannel
+  recipient  String
+  type       String
+  body       String              @db.Text
+  status     String
+  externalId String?
+  error      String?
+  createdAt  DateTime            @default(now())
+  business   Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@index([businessId])
+  @@index([createdAt])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  businessId  String
+  type        String
+  period      String
+  data        Json
+  generatedAt DateTime @default(now())
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@unique([businessId, type, period])
+  @@index([businessId])
+}
+
+model PlatformAnnouncement {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   @db.Text
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

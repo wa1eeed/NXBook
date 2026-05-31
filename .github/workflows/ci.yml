@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Type-check & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          NEXTAUTH_SECRET: ci-secret-not-for-prod
+          NEXTAUTH_URL: http://localhost:3000
+          JWT_ENCRYPTION_KEY: ci-encryption-key-32-chars!!!!!!
+          ENCRYPTION_KEY: 0000000000000000000000000000000000000000000000000000000000000000
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_APP_DOMAIN: localhost
+        run: npm run build
+
+      - name: i18n parity
+        run: |
+          node -e "
+          const en=require('./messages/en.json'),ar=require('./messages/ar.json')
+          function keys(o,p=''){return Object.entries(o).flatMap(([k,v])=>typeof v==='object'&&v!==null?keys(v,p+k+'.'):[p+k])}
+          const ek=new Set(keys(en)),ak=new Set(keys(ar))
+          const onlyEn=keys(en).filter(k=>!ak.has(k))
+          const onlyAr=keys(ar).filter(k=>!ek.has(k))
+          if(onlyEn.length||onlyAr.length){
+            console.error('i18n parity FAIL')
+            if(onlyEn.length) console.error('Only EN:',onlyEn)
+            if(onlyAr.length) console.error('Only AR:',onlyAr)
+            process.exit(1)
+          }
+          console.log('i18n parity OK — '+ek.size+' keys')
+          "

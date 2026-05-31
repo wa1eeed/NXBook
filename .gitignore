@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+!.env.*.example
+dist/
+.DS_Store
+*.log
+.vercel
+coverage/
+prisma/migrations/dev.db*
