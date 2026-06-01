@@ -128,7 +128,12 @@
     "faq6Q": "كم تستغرق عملية الإعداد؟",
     "faq6A": "عادةً أقل من ١٠ دقائق. اختر نوع نشاطك، احجز اسم نطاقك الفرعي، أضف أول خدمة، وأنت جاهز.",
     "statCustomers": "ثنائية اللغة",
-    "statCustomersValue": "AR/EN"
+    "statCustomersValue": "AR/EN",
+    "ctaContinueSetup": "أكمل الإعداد",
+    "ctaDashboard": "فتح لوحة التحكم",
+    "ctaAdmin": "فتح لوحة الإدارة",
+    "ctaSignedInHint": "أنت مسجّل دخول بالفعل.",
+    "ctaSwitchAccount": "تبديل الحساب"
   },
   "common": {
     "appName": "NXBook",
@@ -194,7 +199,9 @@
       "alreadyOnboarded": "لديك نشاط تجاري بالفعل.",
       "slugUnavailable": "هذا الرابط لم يعد متاحاً.",
       "createFailed": "تعذّر إنشاء نشاطك. حاول مرة أخرى."
-    }
+    },
+    "signOutHint": "حساب خاطئ؟",
+    "signOutCta": "تسجيل الخروج والبدء من جديد"
   },
   "dashboard": {
     "home": "الرئيسية",

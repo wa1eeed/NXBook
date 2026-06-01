@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { getTranslations } from "next-intl/server"
+import { auth } from "@/lib/auth"
 import {
   CalendarCheck,
   ListChecks,
@@ -48,6 +49,28 @@ import { Button } from "@/components/ui/button"
 //  12. CTA band
 export default async function Home() {
   const t = await getTranslations("marketing")
+  const session = await auth()
+
+  // Session-aware primary CTA: if the visitor is already signed in we
+  // don't want to send them through /register (the middleware would
+  // bounce them anyway), so the button label + href change to reflect
+  // where they actually need to go next.
+  const isAuthed = !!session?.user?.id
+  const isSuperAdmin = session?.user?.role === "SUPER_ADMIN"
+  const ctaHref = isSuperAdmin
+    ? "/admin"
+    : isAuthed
+      ? session?.user?.onboardingDone
+        ? "/dashboard"
+        : "/onboarding"
+      : "/register"
+  const ctaLabel = isSuperAdmin
+    ? t("ctaAdmin")
+    : isAuthed
+      ? session?.user?.onboardingDone
+        ? t("ctaDashboard")
+        : t("ctaContinueSetup")
+      : t("ctaPrimary")
 
   const features = [
     { icon: CalendarCheck, title: t("f1Title"), desc: t("f1Desc") },
@@ -156,8 +179,8 @@ export default async function Home() {
 
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button size="lg" asChild className="w-full sm:w-auto">
-                  <Link href="/register">
-                    {t("ctaPrimary")}
+                  <Link href={ctaHref}>
+                    {ctaLabel}
                     <ArrowRight className="size-4 rtl:rotate-180" />
                   </Link>
                 </Button>
@@ -166,7 +189,20 @@ export default async function Home() {
                 </Button>
               </div>
 
-              <p className="mt-4 text-sm text-muted-foreground">{t("noCard")}</p>
+              {!isAuthed && (
+                <p className="mt-4 text-sm text-muted-foreground">{t("noCard")}</p>
+              )}
+              {isAuthed && !isSuperAdmin && (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  {t("ctaSignedInHint")}{" "}
+                  <Link
+                    href="/api/auth/signout"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {t("ctaSwitchAccount")}
+                  </Link>
+                </p>
+              )}
 
               <div className="mt-3 inline-flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="inline-flex">
@@ -597,7 +633,7 @@ export default async function Home() {
                   variant={p.featured ? "default" : "outline"}
                   className="mt-6 w-full"
                 >
-                  <Link href="/register">{t("ctaPrimary")}</Link>
+                  <Link href={ctaHref}>{ctaLabel}</Link>
                 </Button>
               </div>
             ))}
@@ -662,8 +698,8 @@ export default async function Home() {
               </p>
               <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button size="lg" asChild>
-                  <Link href="/register">
-                    {t("ctaPrimary")}
+                  <Link href={ctaHref}>
+                    {ctaLabel}
                     <ArrowRight className="size-4 rtl:rotate-180" />
                   </Link>
                 </Button>
@@ -671,7 +707,9 @@ export default async function Home() {
                   <Link href="/pricing">{t("ctaSecondary")}</Link>
                 </Button>
               </div>
-              <p className="mt-4 text-xs text-muted-foreground">{t("noCard")}</p>
+              {!isAuthed && (
+                <p className="mt-4 text-xs text-muted-foreground">{t("noCard")}</p>
+              )}
             </div>
           </div>
         </section>

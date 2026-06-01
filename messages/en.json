@@ -128,7 +128,12 @@
     "faq6Q": "How long does setup take?",
     "faq6A": "Usually under 10 minutes. Pick your business type, claim your subdomain, add your first service, and you're live.",
     "statCustomers": "Bilingual",
-    "statCustomersValue": "AR/EN"
+    "statCustomersValue": "AR/EN",
+    "ctaContinueSetup": "Continue setup",
+    "ctaDashboard": "Open dashboard",
+    "ctaAdmin": "Open admin panel",
+    "ctaSignedInHint": "Already signed in.",
+    "ctaSwitchAccount": "Switch account"
   },
   "common": {
     "appName": "NXBook",
@@ -194,7 +199,9 @@
       "alreadyOnboarded": "You already have a business.",
       "slugUnavailable": "That URL is no longer available.",
       "createFailed": "Couldn't create your business. Please try again."
-    }
+    },
+    "signOutHint": "Wrong account?",
+    "signOutCta": "Sign out and start over"
   },
   "dashboard": {
     "home": "Home",
