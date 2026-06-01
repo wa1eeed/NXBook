@@ -54,6 +54,68 @@ keeps working throughout.
 
 ---
 
+## 🛡️ Account Security Hardening (REGISTERED — not started)
+
+> **Status:** registered for later. These three items address known gaps in the
+> auth flow. They were deferred to unblock the production launch — until they
+> ship, new accounts are auto-verified at registration and password reset is
+> not available. **Email + auth slice should be done as a single coordinated
+> piece** because items 1 and 2 share the Resend transactional-email pipeline.
+
+### 1. Email verification flow (Resend)
+- **Why:** today anyone can register with any email (even one that isn't
+  theirs) because `isVerified` is forced to `true` in
+  `src/app/(auth)/register/actions.ts`. This was a temporary unblock — the
+  comment in that file flags it.
+- **Scope:**
+  - Revert `isVerified` back to `process.env.NODE_ENV !== "production"`.
+  - Send a verification email via Resend on registration containing a signed
+    one-time link `/verify-email?token=…` (token already generated via
+    `verifyToken` column on `User`).
+  - Build `/verify-email/page.tsx` server-side route handler that validates
+    the token, sets `isVerified=true`, clears the token, and redirects to
+    `/onboarding`.
+  - Re-send verification action (rate-limited) for users stuck at unverified.
+  - i18n: `auth.verifyEmail.*` strings (subject, body, CTA, success, expired).
+  - Migration to verify any pre-existing legacy accounts in a single batch
+    when the slice ships, so live users don't get locked out.
+
+### 2. Forgot password flow
+- **Why:** there is currently no way to recover a forgotten password — the
+  `/forgot-password` placeholder route is unimplemented.
+- **Scope:**
+  - `/forgot-password` form → server action issues a signed reset token
+    (TTL 1h), stores hash on `User` (new column `resetTokenHash`,
+    `resetTokenExpiresAt`).
+  - Send reset email via Resend (same pipeline as verification).
+  - `/reset-password?token=…` form → validates token, sets new
+    `passwordHash`, clears the token, invalidates any other live sessions.
+  - Rate-limit per IP **and** per email to prevent enumeration / spam.
+  - i18n: `auth.forgotPassword.*` / `auth.resetPassword.*`.
+
+### 3. Per-account login rate limiting
+- **Why:** today `src/lib/ratelimit.ts` is wired into `/login` per-IP only
+  (`LIMITS.auth`). An attacker rotating proxies can still brute-force a
+  single account.
+- **Scope:**
+  - Add per-email key (`auth:email:<lowercased>`) on top of per-IP, with a
+    stricter window (e.g. 5 attempts / 15 min).
+  - On lockout, return a generic "too many attempts" error (do **not** leak
+    whether the email exists).
+  - Optional `User.failedLoginAttempts` + `lockedUntil` columns for a
+    persistent lock that survives Redis restarts.
+  - Surface in the audit log (`recordAudit("auth.lockout", ...)`).
+  - Reset the counter on a successful login.
+
+### Why it's safe to defer
+Items 1 and 2 are user-experience improvements over an account model that
+already works — registration + login succeed today. Item 3 is a defense-in-
+depth measure; current per-IP limits + bcrypt rounds (12) already make
+brute-force expensive. All three are additive — no schema redesign, no
+behavior change for the booking platform itself.
+
+---
+
 ## 🔮 Phase 3 — Custom Agent Builder (future, CLAUDE.md §10.5)
 
 Level 2/3 autonomous agents: client-authored agents with a per-agent
