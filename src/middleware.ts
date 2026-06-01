@@ -17,10 +17,10 @@ export default auth(async (req) => {
 
   // ─── Subdomain routing ─────────────────────────────────
   // business.platform.com → /{slug}
-  const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? "localhost"
-  const isSubdomain = hostname !== appDomain &&
-    hostname !== `www.${appDomain}` &&
-    hostname.endsWith(`.${appDomain}`)
+  const appDomain = (process.env.NEXT_PUBLIC_APP_DOMAIN ?? "localhost").replace(/^www\./, "")
+  // Treat the bare domain AND www as "our domain" — not subdomains/foreign.
+  const isOwnDomain = hostname === appDomain || hostname === `www.${appDomain}` || hostname === "localhost"
+  const isSubdomain = !isOwnDomain && hostname.endsWith(`.${appDomain}`)
 
   if (isSubdomain) {
     const slug = hostname.replace(`.${appDomain}`, "")
@@ -33,11 +33,7 @@ export default auth(async (req) => {
   // A fully foreign host (not our app domain) → resolve to a tenant
   // slug via the Node API route (edge middleware can't use Prisma),
   // then transparently rewrite so the client's domain stays in the URL.
-  const isForeignHost =
-    hostname !== appDomain &&
-    hostname !== `www.${appDomain}` &&
-    !hostname.endsWith(`.${appDomain}`) &&
-    hostname !== "localhost"
+  const isForeignHost = !isOwnDomain && !isSubdomain
 
   if (isForeignHost && !pathname.startsWith("/api")) {
     try {
