@@ -46,10 +46,12 @@ export async function registerUser(
   const passwordHash = await bcrypt.hash(password, 12)
   const verifyToken = randomBytes(32).toString("hex")
 
-  // In dev we auto-verify so the account can log in immediately. In
-  // production this would stay false until the email link is clicked
-  // (email verification is wired in a later slice).
-  const isVerified = process.env.NODE_ENV !== "production"
+  // Email verification flow (Resend) is not yet wired (planned for a
+  // later slice). Until then we auto-verify in ALL environments so newly
+  // registered owners can complete onboarding. When email verification
+  // ships, flip this back to `process.env.NODE_ENV !== "production"`
+  // (or remove this branch entirely once the verify endpoint is live).
+  const isVerified = true
 
   await prisma.user.create({
     data: {
