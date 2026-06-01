@@ -1,21 +1,18 @@
 #!/bin/sh
-# Production startup script.
-# Runs prisma migrate deploy (fail-open), then starts Next.js.
+# Production startup — migrate then start Next.js.
+# Uses node directly to invoke prisma CLI (avoids npx/PATH issues
+# in the standalone runner and ensures wasm files are found).
 
-echo "[start] DATABASE_URL prefix: $(echo $DATABASE_URL | cut -c1-30)..."
+echo "[start] DATABASE_URL prefix: $(echo "$DATABASE_URL" | cut -c1-35)..."
 
 echo "[start] Running prisma migrate deploy..."
-if [ -f ./node_modules/.bin/prisma ]; then
-  ./node_modules/.bin/prisma migrate deploy 2>&1
-  EXIT=$?
-  if [ $EXIT -ne 0 ]; then
-    echo "[start] WARNING: migrate deploy exited with $EXIT — starting server anyway"
-  else
-    echo "[start] Migrations OK"
-  fi
+node node_modules/prisma/build/index.js migrate deploy
+EXIT=$?
+if [ $EXIT -ne 0 ]; then
+  echo "[start] WARNING: migrate deploy exited $EXIT — starting server anyway"
 else
-  echo "[start] prisma CLI not found — skipping migrations"
+  echo "[start] Migrations applied OK"
 fi
 
-echo "[start] Starting Next.js on port ${PORT:-3000}..."
+echo "[start] Starting Next.js on :${PORT:-3000}..."
 exec node server.js
