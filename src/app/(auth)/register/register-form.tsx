@@ -27,8 +27,12 @@ export function RegisterForm() {
   >(registerUser, null)
 
   useEffect(() => {
-    // On success, send them to login so they can sign in and onboard.
-    if (state?.ok) router.push("/login?registered=1")
+    // On success the user was auto-signed-in by the server action — go
+    // straight to /onboarding. If auto-signin failed for some reason,
+    // fall back to /login so the user can sign in manually.
+    if (state?.ok) {
+      router.push(state.autoSignedIn === false ? "/login?registered=1" : "/onboarding")
+    }
   }, [state, router])
 
   return (

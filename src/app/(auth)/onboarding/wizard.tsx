@@ -98,9 +98,11 @@ export function OnboardingWizard() {
         setError(res.error)
         return
       }
-      // Refresh the JWT so businessId/onboardingDone are populated.
+      // Refresh the JWT so businessId/onboardingDone are populated,
+      // then land the owner straight inside their tenant dashboard
+      // (they can preview the public page later from the dashboard).
       await update()
-      router.push(`/${res.slug}`)
+      router.push("/dashboard")
     })
   }
 

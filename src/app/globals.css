@@ -153,4 +153,54 @@
       0 1px 2px oklch(0 0 0 / 0.04),
       0 8px 24px -8px oklch(0.511 0.1 277 / 0.18);
   }
+
+  /* Stronger, more cinematic hero mesh — 3 orbs + subtle grain via dots. */
+  .bg-hero-mesh {
+    background:
+      radial-gradient(60% 50% at 12% 0%,
+        color-mix(in oklch, var(--primary) 18%, transparent), transparent 65%),
+      radial-gradient(45% 45% at 88% 8%,
+        color-mix(in oklch, oklch(0.7 0.22 330) 16%, transparent), transparent 70%),
+      radial-gradient(70% 60% at 50% 100%,
+        color-mix(in oklch, var(--primary) 8%, transparent), transparent 70%);
+  }
+
+  /* Faint dotted background — pairs well over .bg-hero-mesh sections. */
+  .bg-dots {
+    background-image: radial-gradient(
+      oklch(0 0 0 / 0.05) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+  .dark .bg-dots {
+    background-image: radial-gradient(
+      oklch(1 0 0 / 0.05) 1px, transparent 1px);
+  }
+
+  /* Decorative bordered "ring" used around the mock dashboard preview. */
+  .ring-soft {
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--border) 80%, transparent),
+      0 30px 60px -20px oklch(0.511 0.1 277 / 0.30),
+      0 10px 30px -10px oklch(0.511 0.1 277 / 0.15);
+  }
+
+  /* Animated "live" pulse dot used on the hero badge. */
+  .pulse-dot {
+    position: relative;
+    display: inline-flex;
+  }
+  .pulse-dot::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background-color: currentColor;
+    opacity: 0.45;
+    animation: pulse-ring 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse-ring {
+    0%   { transform: scale(1);   opacity: 0.45; }
+    80%  { transform: scale(2.4); opacity: 0;    }
+    100% { transform: scale(2.4); opacity: 0;    }
+  }
 }

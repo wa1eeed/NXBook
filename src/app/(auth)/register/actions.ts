@@ -1,7 +1,9 @@
 "use server"
 
 // ============================================================
-// Registration server action — creates the OWNER user account.
+// Registration server action — creates the OWNER user account
+// AND immediately signs them in so the redirect chain lands
+// them directly inside /onboarding (no second login step).
 // The Business itself is created later in the onboarding wizard.
 // ============================================================
 
@@ -10,6 +12,7 @@ import bcrypt from "bcryptjs"
 import { randomBytes } from "crypto"
 import { headers } from "next/headers"
 import { prisma } from "@/lib/prisma"
+import { signIn } from "@/lib/auth"
 import { rateLimit, LIMITS, clientIp } from "@/lib/ratelimit"
 
 const schema = z.object({
@@ -17,7 +20,9 @@ const schema = z.object({
   password: z.string().min(8),
 })
 
-export type RegisterResult = { ok: true } | { ok: false; error: string }
+export type RegisterResult =
+  | { ok: true; autoSignedIn?: boolean }
+  | { ok: false; error: string }
 
 export async function registerUser(
   _prev: RegisterResult | null,
@@ -63,5 +68,16 @@ export async function registerUser(
     },
   })
 
-  return { ok: true }
+  // Auto-sign-in so the next navigation has a valid session and the
+  // onboarding page is reachable without a manual login round-trip.
+  // redirect:false → the client decides where to navigate next.
+  try {
+    await signIn("credentials", { email, password, redirect: false })
+  } catch {
+    // If auto-signin fails for any reason, the user can still log in
+    // manually on /login — registration itself succeeded.
+    return { ok: true, autoSignedIn: false }
+  }
+
+  return { ok: true, autoSignedIn: true }
 }
