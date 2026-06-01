@@ -17,6 +17,7 @@ export default async function AdminCustomers() {
     id: c.id,
     name: c.name,
     phone: c.phone,
+    businessId: c.businessId,
     businessName: c.business.name,
     totalBookings: c.totalBookings,
     totalSpent: c.totalSpent,

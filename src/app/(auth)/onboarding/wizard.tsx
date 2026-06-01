@@ -98,11 +98,14 @@ export function OnboardingWizard() {
         setError(res.error)
         return
       }
-      // Refresh the JWT so businessId/onboardingDone are populated,
-      // then land the owner straight inside their tenant dashboard
-      // (they can preview the public page later from the dashboard).
+      // Refresh the JWT so businessId/onboardingDone are populated.
+      // We then do a hard navigation (window.location) instead of
+      // router.push so that the full page reload picks up the refreshed
+      // JWT cookie — router.push inside a transition can fire before the
+      // updated session propagates, causing the middleware to see the old
+      // token (businessId=null) and bounce back to /onboarding.
       await update()
-      router.push("/dashboard")
+      window.location.href = "/dashboard"
     })
   }
 

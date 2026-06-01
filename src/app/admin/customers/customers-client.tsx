@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import Link from "next/link"
 import { useLocale, useTranslations } from "next-intl"
 import { Search, UsersRound } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,6 +13,7 @@ export interface CustomerRow {
   id: string
   name: string
   phone: string
+  businessId: string
   businessName: string
   totalBookings: number
   totalSpent: number
@@ -157,9 +159,12 @@ export function CustomersClient({ customers }: { customers: CustomerRow[] }) {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                        <Link
+                          href={`/admin/businesses/${c.businessId}`}
+                          className="rounded-full bg-muted px-2 py-0.5 text-xs hover:bg-muted/60 hover:underline"
+                        >
                           {c.businessName}
-                        </span>
+                        </Link>
                       </td>
                       <td className="px-4 py-3 tabular-nums">{c.totalBookings}</td>
                       <td className="px-4 py-3 tabular-nums">
@@ -220,7 +225,9 @@ export function CustomersClient({ customers }: { customers: CustomerRow[] }) {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                    <span>{t("business")}: {c.businessName}</span>
+                    <Link href={`/admin/businesses/${c.businessId}`} className="hover:underline">
+                      {t("business")}: {c.businessName}
+                    </Link>
                     <span>{t("bookings")}: {c.totalBookings}</span>
                     <span>{t("spent")}: {Math.round(c.totalSpent)} SAR</span>
                     <span>{t("lastVisit")}: {fmtDate(c.lastVisitAt, locale)}</span>

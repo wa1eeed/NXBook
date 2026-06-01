@@ -4,19 +4,13 @@ import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useLocale, useTranslations } from "next-intl"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
-import { Search, X } from "lucide-react"
-import {
-  setBusinessActive,
-  getBusinessDetails,
-  type BusinessDetails,
-} from "./actions"
+import { Building2, Search } from "lucide-react"
+import { setBusinessActive } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { EmptyState } from "@/components/ui/empty-state"
 import { StatusBadge } from "@/components/admin/status-badge"
-import { Building2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface BizRow {
@@ -54,19 +48,13 @@ function daysUntil(iso: string | null): number | null {
 
 export function BusinessesClient({ businesses }: { businesses: BizRow[] }) {
   const t = useTranslations("admin.businesses")
-  const tt = useTranslations("transactions")
   const locale = useLocale()
-  const reduce = useReducedMotion()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
   const [query, setQuery] = useState("")
   const [planFilter, setPlanFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-
-  const [detailId, setDetailId] = useState<string | null>(null)
-  const [detail, setDetail] = useState<BusinessDetails | null>(null)
-  const [loadingDetail, setLoadingDetail] = useState(false)
 
   const plans = useMemo(
     () =>
@@ -96,30 +84,12 @@ export function BusinessesClient({ businesses }: { businesses: BizRow[] }) {
     })
   }
 
-  function openDetail(id: string) {
-    setDetailId(id)
-    setDetail(null)
-    setLoadingDetail(true)
-    void getBusinessDetails(id).then((d) => {
-      setDetail(d)
-      setLoadingDetail(false)
-    })
-  }
-
-  function closeDetail() {
-    setDetailId(null)
-    setDetail(null)
-  }
-
   const STATUS_TABS: { key: StatusFilter; label: string }[] = [
     { key: "all", label: t("filterAll") },
     { key: "active", label: t("filterActive") },
     { key: "trialing", label: t("filterTrialing") },
     { key: "inactive", label: t("filterInactive") },
   ]
-
-  const dir = locale === "ar" ? "rtl" : "ltr"
-  const panelX = locale === "ar" ? "-100%" : "100%"
 
   return (
     <div className="flex flex-col gap-6">
@@ -243,12 +213,10 @@ export function BusinessesClient({ businesses }: { businesses: BizRow[] }) {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openDetail(b.id)}
-                            >
-                              {t("details")}
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={`/admin/businesses/${b.id}`}>
+                                {t("details")}
+                              </Link>
                             </Button>
                             <Button
                               variant={b.isActive ? "outline" : "default"}
@@ -312,9 +280,11 @@ export function BusinessesClient({ businesses }: { businesses: BizRow[] }) {
                         variant="outline"
                         size="sm"
                         className="flex-1"
-                        onClick={() => openDetail(b.id)}
+                        asChild
                       >
-                        {t("details")}
+                        <Link href={`/admin/businesses/${b.id}`}>
+                          {t("details")}
+                        </Link>
                       </Button>
                       <Button
                         variant={b.isActive ? "outline" : "default"}
@@ -334,186 +304,6 @@ export function BusinessesClient({ businesses }: { businesses: BizRow[] }) {
         </>
       )}
 
-      {/* Slide-over */}
-      <AnimatePresence>
-        {detailId && (
-          <>
-            <motion.div
-              key="overlay"
-              className="fixed inset-0 z-40 bg-black/40"
-              initial={reduce ? false : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={reduce ? undefined : { opacity: 0 }}
-              onClick={closeDetail}
-            />
-            <motion.div
-              key="panel"
-              dir={dir}
-              className="fixed inset-block-0 inset-inline-end-0 z-50 flex w-full max-w-md flex-col border-s border-border bg-background shadow-xl"
-              initial={reduce ? false : { x: panelX }}
-              animate={{ x: 0 }}
-              exit={reduce ? undefined : { x: panelX }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            >
-              <div className="flex items-center justify-between border-b border-border px-5 py-4">
-                <h2 className="truncate text-lg font-semibold">
-                  {detail?.name ?? "…"}
-                </h2>
-                <button
-                  onClick={closeDetail}
-                  aria-label={t("closePanel")}
-                  className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-                >
-                  <X className="size-5" />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-5">
-                {loadingDetail && (
-                  <p className="text-sm text-muted-foreground">…</p>
-                )}
-                {detail && (
-                  <div className="flex flex-col gap-6 text-sm">
-                    <section className="flex flex-col gap-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t("info")}
-                      </h3>
-                      <DetailRow label={t("title")} value={detail.name} />
-                      <DetailRow label="slug" value={`/${detail.slug}`} mono />
-                      <DetailRow label={t("type")} value={detail.type} />
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">
-                          {t("brandColor")}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <span
-                            className="size-4 rounded-full border border-border"
-                            style={{ backgroundColor: detail.brandColor }}
-                          />
-                          <span className="font-mono text-xs">
-                            {detail.brandColor}
-                          </span>
-                        </span>
-                      </div>
-                      <DetailRow label={t("locale")} value={detail.defaultLocale} />
-                      <DetailRow
-                        label={t("created")}
-                        value={fmtDate(detail.createdAt, locale)}
-                      />
-                    </section>
-
-                    <section className="flex flex-col gap-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t("subscription")}
-                      </h3>
-                      <DetailRow label={t("plan")} value={detail.plan ?? "—"} />
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">{t("status")}</span>
-                        <StatusBadge
-                          status={detail.status}
-                          label={detail.status ?? undefined}
-                        />
-                      </div>
-                      <DetailRow
-                        label={t("trialEnds")}
-                        value={fmtDate(detail.trialEndsAt, locale)}
-                      />
-                    </section>
-
-                    <section className="flex flex-col gap-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t("recentBookings")}
-                      </h3>
-                      {detail.recentBookings.length === 0 ? (
-                        <p className="text-muted-foreground">{t("noBookings")}</p>
-                      ) : (
-                        detail.recentBookings.map((bk) => (
-                          <div
-                            key={bk.id}
-                            className="flex items-center justify-between gap-2 border-b border-border/60 py-1.5 last:border-0"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate">{bk.customer}</p>
-                              <p className="truncate text-xs text-muted-foreground">
-                                {bk.service} · {fmtDate(bk.date, locale)}
-                              </p>
-                            </div>
-                            <StatusBadge status={bk.status} label={bk.status} />
-                          </div>
-                        ))
-                      )}
-                    </section>
-
-                    <section className="flex flex-col gap-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {tt("title")}
-                      </h3>
-                      {detail.recentTransactions.length === 0 ? (
-                        <p className="text-muted-foreground">{tt("empty")}</p>
-                      ) : (
-                        detail.recentTransactions.map((tx) => (
-                          <div
-                            key={tx.id}
-                            className="flex items-center justify-between gap-2 border-b border-border/60 py-1.5 last:border-0"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate font-medium tabular-nums">
-                                {tx.amount} SAR
-                              </p>
-                              <p className="truncate text-xs text-muted-foreground">
-                                {tx.provider} · {fmtDate(tx.createdAt, locale)}
-                              </p>
-                            </div>
-                            <StatusBadge status={tx.status} label={tx.status} />
-                          </div>
-                        ))
-                      )}
-                    </section>
-
-                    <section className="flex flex-col gap-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t("recentAudit")}
-                      </h3>
-                      {detail.recentAudit.length === 0 ? (
-                        <p className="text-muted-foreground">{t("noAudit")}</p>
-                      ) : (
-                        detail.recentAudit.map((a) => (
-                          <div
-                            key={a.id}
-                            className="border-b border-border/60 py-1.5 text-xs last:border-0"
-                          >
-                            <p className="font-medium">{a.action}</p>
-                            <p className="text-muted-foreground">
-                              {a.actor ?? "—"} · {fmtDate(a.createdAt, locale)}
-                            </p>
-                          </div>
-                        ))
-                      )}
-                    </section>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
-function DetailRow({
-  label,
-  value,
-  mono,
-}: {
-  label: string
-  value: string
-  mono?: boolean
-}) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={cn("text-end", mono && "font-mono text-xs")}>{value}</span>
     </div>
   )
 }
