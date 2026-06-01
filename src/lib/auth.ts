@@ -7,6 +7,10 @@ import { z } from "zod"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  // Required when running behind a reverse proxy (Coolify/Caddy/Nginx):
+  // lets NextAuth trust the forwarded Host header instead of throwing
+  // UntrustedHost on a custom domain. Also honors AUTH_TRUST_HOST env.
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
