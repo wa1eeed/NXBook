@@ -54,12 +54,30 @@ const nextConfig: NextConfig = {
 // Sentry wraps the base config FIRST, then next-intl wraps the result.
 // next-intl must be the outermost plugin so its request-config alias survives
 // (Sentry-outermost clobbers it → "Couldn't find next-intl config file").
+//
+// Source-map upload: only when a real auth token is available (not in Docker
+// builder stage where SENTRY_AUTH_TOKEN is blanked, and not when the token
+// is a TODO placeholder). Upload failures must never block the build.
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN
+const hasSentryAuth =
+  !!sentryAuthToken &&
+  sentryAuthToken !== "" &&
+  !sentryAuthToken.startsWith("TODO")
+
 const sentryWrapped = withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  silent: !process.env.CI,
+  authToken: hasSentryAuth ? sentryAuthToken : undefined,
+  // Always silent — avoids spurious output in CI and Coolify build logs.
+  silent: true,
   disableLogger: true,
+  sourcemaps: {
+    // Delete local .map files after upload so they don't ship to clients.
+    deleteSourcemapsAfterUpload: true,
+    // If there's no auth token don't generate or upload source maps at all.
+    // In Docker (SENTRY_AUTH_TOKEN="") this prevents any network calls.
+    disable: !hasSentryAuth,
+  },
 })
 
 export default withNextIntl(sentryWrapped)

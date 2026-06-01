@@ -26,6 +26,13 @@ ENV NEXTAUTH_SECRET="build-stub-secret-min-32-chars!!"
 ENV NEXTAUTH_URL="http://localhost:3000"
 ENV JWT_ENCRYPTION_KEY="build-stub-jwt-key-32chars!!!!"
 ENV ENCRYPTION_KEY="0000000000000000000000000000000000000000000000000000000000000000"
+# Blank out Sentry auth token so the plugin never attempts network calls
+# (source-map upload) during Docker build — upload failures would fail the
+# whole build. Real value is available at runtime via Coolify env vars.
+ENV SENTRY_AUTH_TOKEN=""
+# Cap Node.js heap so the build doesn't OOM-kill the Docker daemon when other
+# containers (db / redis / workers / the live app) are running on the VPS.
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
