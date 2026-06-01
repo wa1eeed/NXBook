@@ -72,16 +72,19 @@ export default auth(async (req) => {
       return NextResponse.redirect(new URL("/login", req.url))
     }
 
-    // Super-admins have no business → send them to their own panel
-    // instead of the tenant onboarding trap.
+    // Super-admins have no business → send them to their own panel.
     if (session.user.role === "SUPER_ADMIN") {
       return NextResponse.redirect(new URL("/admin", req.url))
     }
 
-    // Redirect to onboarding if not done
-    if (!session.user.onboardingDone && !pathname.startsWith("/onboarding")) {
-      return NextResponse.redirect(new URL("/onboarding", req.url))
-    }
+    // NOTE: we do NOT redirect to /onboarding here based on the JWT
+    // `onboardingDone` flag. That flag can be stale immediately after
+    // onboarding completes (the JWT is minted before the Business row
+    // exists; `update()` refreshes it but there is a race window).
+    // Instead, the dashboard layout's `requireBusiness()` does a live
+    // DB lookup and redirects to /onboarding when no membership exists.
+    // This eliminates the /dashboard ↔ /onboarding redirect loop that
+    // caused ERR_TOO_MANY_REDIRECTS.
   }
 
   // ─── Protect admin ────────────────────────────────────
