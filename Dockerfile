@@ -43,6 +43,9 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+# Make local node_modules/.bin available so tools like `tsx` (used by
+# `prisma db seed`) and `prisma` itself resolve without absolute paths.
+ENV PATH="/app/node_modules/.bin:${PATH}"
 
 RUN addgroup --system --gid 1001 nodejs \
  && adduser  --system --uid 1001 nextjs
@@ -62,6 +65,19 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modul
 # (prisma_schema_build_bg.wasm lives inside node_modules/prisma)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma  ./node_modules/prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
+# Transitive deps of @prisma/config that the standalone build doesn't bundle.
+# `effect` is required by @prisma/config at runtime (migrate deploy / db seed).
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/effect ./node_modules/effect
+
+# tsx is needed by `prisma db seed` to execute prisma/seed.ts at runtime.
+# Also copy its small runtime deps (esbuild + get-tsconfig).
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/tsx          ./node_modules/tsx
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/tsx     ./node_modules/.bin/tsx
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/esbuild      ./node_modules/esbuild
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/esbuild ./node_modules/.bin/esbuild
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@esbuild     ./node_modules/@esbuild
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/get-tsconfig ./node_modules/get-tsconfig
 
 # Startup script
 COPY --chown=nextjs:nodejs start.sh ./
