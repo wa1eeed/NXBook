@@ -75,6 +75,11 @@ enum AIProvider {
   OPENAI
 }
 
+enum ServicePaymentMode {
+  ON_ARRIVAL // pay in person at the venue — no online payment required
+  ONLINE     // pay online before the booking is confirmed
+}
+
 enum AIKeyType {
   OWN_KEY
   PLATFORM
@@ -405,6 +410,12 @@ model Service {
   isActive     Boolean               @default(true)
   isVisible    Boolean               @default(true)
   sortOrder    Int                   @default(0)
+  // ── Per-service payment mode (CLAUDE.md §11) ────────────
+  // ON_ARRIVAL → customer books without paying online (default).
+  // ONLINE     → customer must pay before the booking is confirmed.
+  // depositPercent is read from Business when computing the amount;
+  // 0 = full price, otherwise that percentage of the service price.
+  paymentMode  ServicePaymentMode    @default(ON_ARRIVAL)
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
   business     Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
@@ -423,6 +434,10 @@ model ServiceAvailability {
   slotMin   Int
   isActive  Boolean @default(true)
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  // Hard guard: at most one window per (service, day, startTime).
+  // The dashboard pre-checks this in user-friendly Arabic/English; the
+  // unique index is the last line of defense against races + bad clients.
+  @@unique([serviceId, dayOfWeek, startTime])
   @@index([serviceId])
 }
 

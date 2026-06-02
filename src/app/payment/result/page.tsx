@@ -3,9 +3,10 @@
 // kept). No auth: this is the customer's post-payment landing page.
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { getTranslations } from "next-intl/server"
+import { getLocale, getTranslations } from "next-intl/server"
 import { CheckCircle2, XCircle } from "lucide-react"
 import { prisma } from "@/lib/prisma"
+import { formatTime12 } from "@/lib/time"
 
 export default async function PaymentResultPage({
   searchParams,
@@ -14,6 +15,7 @@ export default async function PaymentResultPage({
 }) {
   const { ref, slug, fallback } = await searchParams
   const t = await getTranslations("paymentResult")
+  const locale = await getLocale()
 
   if (!ref) notFound()
 
@@ -38,7 +40,7 @@ export default async function PaymentResultPage({
   const accent = tx.business.brandColor
   const backSlug = slug ?? tx.business.slug
   const dateStr = tx.booking?.date
-    ? `${tx.booking.date.toISOString().slice(0, 10)} · ${tx.booking.startTime}`
+    ? `${tx.booking.date.toISOString().slice(0, 10)} · ${formatTime12(tx.booking.startTime, locale)}`
     : null
 
   return (

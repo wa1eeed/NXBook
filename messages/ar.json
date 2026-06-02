@@ -152,7 +152,8 @@
     "back": "رجوع",
     "next": "التالي",
     "search": "بحث",
-    "comingSoon": "هذا القسم قيد الإنشاء."
+    "comingSoon": "هذا القسم قيد الإنشاء.",
+    "none": "—"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -265,10 +266,20 @@
     "visibleLabel": "مرئي",
     "hiddenLabel": "مخفي",
     "error": {
-      "forbidden": "ليس لديك صلاحية.",
-      "invalidInput": "يرجى التحقق من الحقول.",
+      "forbidden": "لا تملك الصلاحية.",
+      "invalidInput": "الرجاء التحقق من الحقول.",
       "notFound": "الخدمة غير موجودة."
-    }
+    },
+    "paymentMode": "متى يدفع العميل؟",
+    "paymentModeHint": "يمكنك تغيير هذا في أي وقت لكل خدمة.",
+    "payOnArrival": "الدفع عند الوصول",
+    "payOnArrivalDesc": "يدفع العميل في الموقع شخصياً.",
+    "payOnline": "الدفع أونلاين لتأكيد الحجز",
+    "payOnlineDesc": "يُحجز الموعد بعد استلام الدفع فقط.",
+    "saveAndAddAvailability": "حفظ وإضافة الجدول",
+    "addAvailability": "إضافة جدول",
+    "badgeOnline": "دفع أونلاين",
+    "badgeOnArrival": "دفع عند الوصول"
   },
   "availability": {
     "subtitle": "حدّد ساعات العمل الأسبوعية لهذه الخدمة.",
@@ -292,11 +303,17 @@
       "sat": "السبت"
     },
     "error": {
-      "forbidden": "ليس لديك صلاحية.",
-      "invalidInput": "يرجى التحقق من الحقول.",
+      "forbidden": "لا تملك الصلاحية.",
+      "invalidInput": "الرجاء التحقق من الحقول.",
       "notFound": "الخدمة غير موجودة.",
-      "invalidRange": "وقت النهاية يجب أن يكون بعد البداية."
-    }
+      "invalidRange": "يجب أن يكون وقت الانتهاء بعد وقت البدء.",
+      "duplicateSlot": "توجد فترة مسجلة بالفعل في هذا اليوم وهذا الوقت. اختر وقت بدء مختلف."
+    },
+    "added": "تمت إضافة الفترة",
+    "removed": "تم حذف الفترة",
+    "addHint": "تُعرض الأوقات بنظام ١٢ ساعة (صباحاً/مساءً).",
+    "newServiceTitle": "الخطوة التالية: حدد متى يمكن حجز هذه الخدمة",
+    "newServiceHint": "اختر اليوم، حدد وقت البدء والانتهاء، وسيتمكن العملاء من رؤية الأوقات المتاحة على صفحة الحجز."
   },
   "staff": {
     "title": "الموظفون",
@@ -371,13 +388,29 @@
       "alreadyWaiting": "أنت مسجّل بالفعل في قائمة الانتظار لهذا الموعد.",
       "paymentNotEnabled": "الدفع غير متاح حالياً.",
       "rateLimited": "طلبات كثيرة. حاول بعد قليل.",
-      "serviceNotFound": "الخدمة غير موجودة."
+      "serviceNotFound": "الخدمة غير موجودة.",
+      "paymentNotRequired": "هذه الخدمة لا تتطلب الدفع أونلاين."
     },
     "paymentSummary": "ملخص الدفع",
     "depositAmount": "المبلغ المطلوب مسبقاً",
     "cancellationPolicy": "إلغاء مجاني حتى {n} ساعة قبل الموعد",
     "payAndBook": "ادفع واحجز",
-    "processingPayment": "جارٍ التحويل للدفع…"
+    "processingPayment": "جارٍ التحويل للدفع…",
+    "stepService": "الخدمة",
+    "stepTime": "الوقت",
+    "stepDetails": "التفاصيل",
+    "stepPay": "الدفع",
+    "progressLabel": "تقدم الحجز",
+    "loadingSlots": "جاري تحميل الأوقات المتاحة…",
+    "morning": "صباحاً",
+    "afternoon": "ظهراً ومساءً",
+    "durationMins": "{n} دقيقة",
+    "free": "مجاناً",
+    "when": "الموعد",
+    "amountDue": "المبلغ المطلوب الآن",
+    "continueToPayment": "المتابعة للدفع",
+    "badgePayOnline": "دفع أونلاين",
+    "badgePayOnArrival": "دفع عند الوصول"
   },
   "bookings": {
     "title": "الحجوزات",

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { MotionList, MotionItem } from "@/components/ui/motion-list"
 import { cn } from "@/lib/utils"
+import { formatTime12 } from "@/lib/time"
 import { KpiCards, type KpiCard } from "./home-client"
 
 const STATUS_STYLE: Record<string, string> = {
@@ -135,7 +136,7 @@ export default async function DashboardHome() {
                     <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/20 px-4 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <span className="text-sm font-semibold tabular-nums text-muted-foreground">
-                          {b.startTime}
+                          {formatTime12(b.startTime, locale)}
                         </span>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">

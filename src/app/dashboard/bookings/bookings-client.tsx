@@ -28,6 +28,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
+import { formatTime12 } from "@/lib/time"
 import { MotionList, MotionItem } from "@/components/ui/motion-list"
 import { cn } from "@/lib/utils"
 
@@ -474,7 +475,7 @@ export function BookingsClient({
                         <p className="mt-1 text-sm text-muted-foreground">
                           {b.serviceName}
                           {b.staffName ? ` · ${b.staffName}` : ""} · {b.date}{" "}
-                          {b.startTime}
+                          {formatTime12(b.startTime, locale)}
                         </p>
                       </div>
                     </div>
@@ -616,6 +617,7 @@ function RescheduleDrawer({
   onDone: () => void
 }) {
   const t = useTranslations("bookings")
+  const locale = useLocale()
   const [pending, startTransition] = useTransition()
   const [date, setDate] = useState(booking.date)
   const [slots, setSlots] = useState<
@@ -700,7 +702,7 @@ function RescheduleDrawer({
                       : "border-border hover:bg-accent",
                   )}
                 >
-                  {s.startTime}
+                  {formatTime12(s.startTime, locale)}
                 </button>
               ))}
             </div>

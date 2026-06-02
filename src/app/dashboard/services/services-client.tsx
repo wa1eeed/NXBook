@@ -15,6 +15,8 @@ import {
   List,
   Users,
   Coins,
+  CreditCard,
+  MapPin,
 } from "lucide-react"
 import { ServiceForm, type ServiceInitial } from "./service-form"
 import { deleteService } from "./actions"
@@ -25,8 +27,11 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { MotionList, MotionItem } from "@/components/ui/motion-list"
 import { cn } from "@/lib/utils"
 
-export interface ServiceRow extends ServiceInitial {
+export interface ServiceRow extends Omit<ServiceInitial, "paymentMode"> {
   availabilityCount: number
+  // From DB this is always set (default ON_ARRIVAL); make the row type
+  // require it so display components don't need to default.
+  paymentMode: "ON_ARRIVAL" | "ONLINE"
 }
 
 export function ServicesClient({ services }: { services: ServiceRow[] }) {
@@ -62,7 +67,26 @@ export function ServicesClient({ services }: { services: ServiceRow[] }) {
       price: s.price,
       maxCapacity: s.maxCapacity,
       isVisible: s.isVisible,
+      paymentMode: s.paymentMode,
     })
+  }
+
+  function PaymentBadge({ mode }: { mode: "ON_ARRIVAL" | "ONLINE" }) {
+    const isOnline = mode === "ONLINE"
+    const Icon = isOnline ? CreditCard : MapPin
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
+          isOnline
+            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+            : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
+        )}
+      >
+        <Icon className="size-3" />
+        {isOnline ? t("badgeOnline") : t("badgeOnArrival")}
+      </span>
+    )
   }
 
   function VisibilityBadge({ visible }: { visible: boolean }) {
@@ -81,12 +105,21 @@ export function ServicesClient({ services }: { services: ServiceRow[] }) {
   }
 
   function RowActions({ s }: { s: ServiceRow }) {
+    const noAvailability = s.availabilityCount === 0
     return (
       <div className="flex shrink-0 items-center gap-1">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={`/dashboard/services/${s.id}`}>
+        <Button
+          variant={noAvailability ? "default" : "ghost"}
+          size="sm"
+          asChild
+          // Pulse-highlight services that aren't bookable yet — they need
+          // availability windows before customers can pick them.
+        >
+          <Link href={`/dashboard/services/${s.id}${noAvailability ? "?new=1" : ""}`}>
             <Clock className="size-4" />
-            {t("availability", { n: s.availabilityCount })}
+            {noAvailability
+              ? t("addAvailability")
+              : t("availability", { n: s.availabilityCount })}
           </Link>
         </Button>
         <Button
@@ -195,6 +228,11 @@ export function ServicesClient({ services }: { services: ServiceRow[] }) {
                       <p className="min-w-0 truncate font-semibold">{title}</p>
                       <VisibilityBadge visible={s.isVisible} />
                     </div>
+                    {s.price > 0 && (
+                      <div className="-mt-1">
+                        <PaymentBadge mode={s.paymentMode} />
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
                         <Clock className="size-3.5" />
@@ -234,6 +272,7 @@ export function ServicesClient({ services }: { services: ServiceRow[] }) {
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-medium">{title}</p>
                         <VisibilityBadge visible={s.isVisible} />
+                        {s.price > 0 && <PaymentBadge mode={s.paymentMode} />}
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
                         {s.durationMin}m

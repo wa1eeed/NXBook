@@ -152,7 +152,8 @@
     "back": "Back",
     "next": "Next",
     "search": "Search",
-    "comingSoon": "This section is coming soon."
+    "comingSoon": "This section is coming soon.",
+    "none": "—"
   },
   "auth": {
     "login": "Log in",
@@ -268,7 +269,17 @@
       "forbidden": "You don't have permission.",
       "invalidInput": "Please check the fields.",
       "notFound": "Service not found."
-    }
+    },
+    "paymentMode": "When does the customer pay?",
+    "paymentModeHint": "You can change this anytime per service.",
+    "payOnArrival": "Pay on arrival",
+    "payOnArrivalDesc": "Customer pays in person at the venue.",
+    "payOnline": "Pay online to confirm",
+    "payOnlineDesc": "Booking is held until payment is received.",
+    "saveAndAddAvailability": "Save and add availability",
+    "addAvailability": "Add availability",
+    "badgeOnline": "Pay online",
+    "badgeOnArrival": "Pay on arrival"
   },
   "availability": {
     "subtitle": "Set weekly working hours for this service.",
@@ -295,8 +306,14 @@
       "forbidden": "You don't have permission.",
       "invalidInput": "Please check the fields.",
       "notFound": "Service not found.",
-      "invalidRange": "End time must be after start time."
-    }
+      "invalidRange": "End time must be after start time.",
+      "duplicateSlot": "A window already exists at that day and time. Pick a different start."
+    },
+    "added": "Window added",
+    "removed": "Window removed",
+    "addHint": "Times use the 12-hour clock (AM/PM) when displayed.",
+    "newServiceTitle": "Next: set when this service is bookable",
+    "newServiceHint": "Pick a day, set the start and end time, and customers will see live slots on your booking page."
   },
   "staff": {
     "title": "Staff",
@@ -371,13 +388,29 @@
       "alreadyWaiting": "You're already on the waitlist for this slot.",
       "paymentNotEnabled": "Payment is not available right now.",
       "rateLimited": "Too many requests. Please try again shortly.",
-      "serviceNotFound": "Service not found."
+      "serviceNotFound": "Service not found.",
+      "paymentNotRequired": "This service doesn't require online payment."
     },
     "paymentSummary": "Payment summary",
     "depositAmount": "Deposit required",
     "cancellationPolicy": "Free cancellation up to {n} hours before",
     "payAndBook": "Pay and book",
-    "processingPayment": "Redirecting to payment…"
+    "processingPayment": "Redirecting to payment…",
+    "stepService": "Service",
+    "stepTime": "Time",
+    "stepDetails": "Details",
+    "stepPay": "Pay",
+    "progressLabel": "Booking progress",
+    "loadingSlots": "Loading available times…",
+    "morning": "Morning",
+    "afternoon": "Afternoon & Evening",
+    "durationMins": "{n} min",
+    "free": "Free",
+    "when": "When",
+    "amountDue": "Amount due now",
+    "continueToPayment": "Continue to payment",
+    "badgePayOnline": "Pay online",
+    "badgePayOnArrival": "Pay on arrival"
   },
   "bookings": {
     "title": "Bookings",

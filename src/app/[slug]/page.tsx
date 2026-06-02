@@ -42,6 +42,7 @@ export default async function TenantPage({
     durationMin: s.durationMin,
     price: s.price,
     maxCapacity: s.maxCapacity,
+    paymentMode: s.paymentMode,
   }))
 
   const trust = [
@@ -102,7 +103,6 @@ export default async function TenantPage({
               slug={slug}
               services={services}
               accent={accent}
-              paymentEnabled={business.paymentEnabled}
               depositPercent={business.depositPercent}
               cancellationHours={business.cancellationHours}
             />

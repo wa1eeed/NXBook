@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { Download } from "lucide-react"
 import {
   ResponsiveContainer,
@@ -20,6 +20,7 @@ import { exportReportCsv } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { formatTime12 } from "@/lib/time"
 
 const PERIODS = [7, 30, 90]
 
@@ -33,6 +34,7 @@ export function ReportsClient({
   aiReport: { recommendations: string; period: string } | null
 }) {
   const t = useTranslations("reports")
+  const locale = useLocale()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
@@ -60,10 +62,14 @@ export function ReportsClient({
     { key: "noShowRate", value: `${metrics.noShowRate}%` },
   ]
 
-  // Show a readable subset of peak hours (business hours 7–22).
+  // Show a readable subset of peak hours (business hours 7–22) using
+  // 12-hour AM/PM labels for parity with the rest of the UI.
   const hourBars = metrics.peakHours
     .filter((h) => h.hour >= 7 && h.hour <= 22)
-    .map((h) => ({ label: String(h.hour), value: h.count }))
+    .map((h) => ({
+      label: formatTime12(`${String(h.hour).padStart(2, "0")}:00`, locale),
+      value: h.count,
+    }))
 
   // Daily series: show last 14 points to stay readable.
   const dayBars = metrics.dailyBookings.slice(-14).map((d) => ({

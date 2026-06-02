@@ -178,17 +178,25 @@ export async function initiateBookingPaymentAction(
   // 1. Resolve business (with payment config) — businessId is never trusted from the client.
   const business = await prisma.business.findFirst({
     where: { slug: d.slug, isActive: true },
-    select: { id: true, paymentEnabled: true, paymentProvider: true, depositPercent: true },
+    select: { id: true, paymentProvider: true, depositPercent: true },
   })
   if (!business) return { ok: false, error: "notFound" }
-  if (!business.paymentEnabled) return { ok: false, error: "paymentNotEnabled" }
 
-  // 2. Confirm the service belongs to this business + check slot availability.
+  // 2. Confirm the service belongs to this business + that it actually
+  // requires online payment. Per-service is the authoritative gate now —
+  // not the business-wide paymentEnabled flag (CLAUDE.md §11).
   const service = await prisma.service.findFirst({
     where: { id: d.serviceId, businessId: business.id, isActive: true, isVisible: true },
-    select: { id: true, nameEn: true, price: true },
+    select: { id: true, nameEn: true, price: true, paymentMode: true },
   })
   if (!service) return { ok: false, error: "notFound" }
+  if (service.paymentMode !== "ONLINE") {
+    return { ok: false, error: "paymentNotRequired" }
+  }
+  if (service.price <= 0) {
+    // Free services can't be online-paid even if mis-flagged.
+    return { ok: false, error: "paymentNotRequired" }
+  }
 
   const bookingDate = new Date(d.date + "T00:00:00")
   const slots = await getAvailableSlots(business.id, d.serviceId, bookingDate)

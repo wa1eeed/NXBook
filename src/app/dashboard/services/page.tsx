@@ -22,6 +22,7 @@ export default async function ServicesPage() {
     price: s.price,
     maxCapacity: s.maxCapacity,
     isVisible: s.isVisible,
+    paymentMode: s.paymentMode,
     availabilityCount: s._count.availability,
   }))
 

@@ -20,11 +20,21 @@ const serviceSchema = z.object({
   price: z.coerce.number().min(0).max(1_000_000),
   maxCapacity: z.coerce.number().int().min(1).max(1000),
   isVisible: z.coerce.boolean().optional(),
+  // Per-service payment mode (CLAUDE.md §11). Defaults to ON_ARRIVAL when
+  // missing so the form is backwards-compatible with old POSTs.
+  paymentMode: z.enum(["ON_ARRIVAL", "ONLINE"]).optional(),
 })
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
+// Variant for createService — returns the new id so the client can
+// route the owner straight into the availability editor (UX flow).
+export type CreateServiceResult =
+  | { ok: true; id: string }
+  | { ok: false; error: string }
 
-export async function createService(formData: FormData): Promise<ActionResult> {
+export async function createService(
+  formData: FormData,
+): Promise<CreateServiceResult> {
   const ctx = await requireBusiness()
   if (!canManage(ctx.role)) return { ok: false, error: "forbidden" }
 
@@ -34,7 +44,7 @@ export async function createService(formData: FormData): Promise<ActionResult> {
 
   const count = await prisma.service.count({ where: { businessId: ctx.businessId } })
 
-  await prisma.service.create({
+  const created = await prisma.service.create({
     data: {
       businessId: ctx.businessId,
       nameEn: d.nameEn,
@@ -46,12 +56,15 @@ export async function createService(formData: FormData): Promise<ActionResult> {
       price: d.price,
       maxCapacity: d.maxCapacity,
       isVisible: d.isVisible ?? true,
+      // Free services can't be "pay online" — silently coerce to ON_ARRIVAL.
+      paymentMode: d.price > 0 ? (d.paymentMode ?? "ON_ARRIVAL") : "ON_ARRIVAL",
       sortOrder: count,
     },
+    select: { id: true },
   })
 
   revalidatePath("/dashboard/services")
-  return { ok: true }
+  return { ok: true, id: created.id }
 }
 
 export async function updateService(
@@ -83,6 +96,7 @@ export async function updateService(
       price: d.price,
       maxCapacity: d.maxCapacity,
       isVisible: d.isVisible ?? true,
+      paymentMode: d.price > 0 ? (d.paymentMode ?? "ON_ARRIVAL") : "ON_ARRIVAL",
     },
   })
 
@@ -136,15 +150,43 @@ export async function addAvailability(
   if (!service) return { ok: false, error: "notFound" }
   if (d.startTime >= d.endTime) return { ok: false, error: "invalidRange" }
 
-  await prisma.serviceAvailability.create({
-    data: {
-      serviceId: d.serviceId,
-      dayOfWeek: d.dayOfWeek,
-      startTime: d.startTime,
-      endTime: d.endTime,
-      slotMin: d.slotMin,
-    },
+  // ── Friendly duplicate / overlap pre-check ────────────────────
+  // The DB-level unique index (serviceId, dayOfWeek, startTime) is the
+  // ultimate guard, but we also reject any window that overlaps an
+  // existing one on the same day — that's a more honest UX than letting
+  // two windows coexist that the booking engine would treat as one.
+  const sameDay = await prisma.serviceAvailability.findMany({
+    where: { serviceId: d.serviceId, dayOfWeek: d.dayOfWeek },
+    select: { startTime: true, endTime: true },
   })
+  const overlaps = sameDay.some(
+    (w) => d.startTime < w.endTime && d.endTime > w.startTime,
+  )
+  if (overlaps) return { ok: false, error: "duplicateSlot" }
+
+  try {
+    await prisma.serviceAvailability.create({
+      data: {
+        serviceId: d.serviceId,
+        dayOfWeek: d.dayOfWeek,
+        startTime: d.startTime,
+        endTime: d.endTime,
+        slotMin: d.slotMin,
+      },
+    })
+  } catch (e: unknown) {
+    // P2002 = unique constraint violation; treat as duplicate at the API level
+    // in case the pre-check raced.
+    if (
+      e &&
+      typeof e === "object" &&
+      "code" in e &&
+      (e as { code?: string }).code === "P2002"
+    ) {
+      return { ok: false, error: "duplicateSlot" }
+    }
+    throw e
+  }
 
   revalidatePath(`/dashboard/services/${d.serviceId}`)
   return { ok: true }

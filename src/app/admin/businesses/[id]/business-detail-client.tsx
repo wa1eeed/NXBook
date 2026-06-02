@@ -24,6 +24,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { StatusBadge } from "@/components/admin/status-badge"
 import { BarChart } from "@/components/dashboard/bar-chart"
 import { cn } from "@/lib/utils"
+import { formatTime12 } from "@/lib/time"
 
 type Tab = "overview" | "bookings" | "customers" | "revenue" | "audit"
 
@@ -388,8 +389,8 @@ export function BusinessDetailClient({ data }: { data: BusinessDetailData }) {
                         <td className="px-4 py-3 text-muted-foreground">
                           {fmtDate(b.date, locale)}
                         </td>
-                        <td className="px-4 py-3 font-mono text-xs">
-                          {b.startTime}
+                        <td className="px-4 py-3 font-mono text-xs tabular-nums">
+                          {formatTime12(b.startTime, locale)}
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-medium">{b.customerName}</div>

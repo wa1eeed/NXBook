@@ -21,6 +21,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
 import { MotionList, MotionItem } from "@/components/ui/motion-list"
 import { cn } from "@/lib/utils"
+import { formatTime12 } from "@/lib/time"
 
 export interface RecentBooking {
   id: string
@@ -521,6 +522,7 @@ function BookingsTab({
   ts: (k: string) => string
 }) {
   const t = useTranslations("customers")
+  const locale = useLocale()
   return (
     <div className="flex flex-col gap-3">
       <Button size="sm" variant="outline" className="self-start" asChild>
@@ -541,7 +543,7 @@ function BookingsTab({
               <div className="min-w-0">
                 <p className="truncate font-medium">{b.serviceName}</p>
                 <p className="text-xs text-muted-foreground tabular-nums">
-                  {b.date} {b.startTime}
+                  {b.date} {formatTime12(b.startTime, locale)}
                   {b.amount != null ? ` · ${b.amount} SAR` : ""}
                 </p>
               </div>

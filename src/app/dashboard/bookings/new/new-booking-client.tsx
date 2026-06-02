@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import toast from "react-hot-toast"
 import { ArrowLeft, ArrowRight, Check, Search } from "lucide-react"
 import { createManualBookingAction, getAvailableSlotsAction } from "../actions"
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { PageHeader } from "@/components/ui/page-header"
 import { cn } from "@/lib/utils"
+import { formatTime12 } from "@/lib/time"
 
 export interface ServiceOption {
   id: string
@@ -39,6 +40,7 @@ export function NewBookingClient({
 }) {
   const t = useTranslations("bookings")
   const tc = useTranslations("customers")
+  const locale = useLocale()
   const router = useRouter()
   const params = useSearchParams()
   const [pending, startTransition] = useTransition()
@@ -216,7 +218,7 @@ export function NewBookingClient({
                           : "border-border hover:bg-accent",
                       )}
                     >
-                      {s.startTime}
+                      {formatTime12(s.startTime, locale)}
                     </button>
                   ))}
                 </div>
@@ -314,7 +316,7 @@ export function NewBookingClient({
                 <Row label={t("filterService")} value={service?.name ?? "—"} />
                 <Row
                   label={t("dateFrom")}
-                  value={`${date} ${startTime}`}
+                  value={`${date} ${formatTime12(startTime, locale)}`}
                 />
                 <Row label={tc("name")} value={customerLabel} />
                 {service && (
