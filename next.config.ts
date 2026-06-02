@@ -43,9 +43,26 @@ const securityHeaders = [
   },
 ]
 
+// ── Docker build optimisation ─────────────────────────────────────────
+// DOCKER_BUILD=1 is injected by the Dockerfile so we can skip the
+// heavy TypeScript / ESLint re-check passes during image creation.
+// We already verify types via `tsc --noEmit` locally and in CI.
+// Skipping these in the Docker builder saves ~600 MB of peak heap and
+// prevents intermittent OOM kills on the Coolify VPS where the build
+// container shares RAM with the live app + db + redis.
+const isDockerBuild = process.env.DOCKER_BUILD === "1"
+
 const nextConfig: NextConfig = {
   // Standalone build for the Docker runner stage (see Dockerfile).
   output: "standalone",
+
+  // Skip TS + ESLint checks inside Docker — cuts peak build memory by ~30%.
+  // Local development, CI, and the pre-push hook all still run them.
+  ...(isDockerBuild && {
+    typescript: { ignoreBuildErrors: true },
+    eslint: { ignoreDuringBuilds: true },
+  }),
+
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }]
   },

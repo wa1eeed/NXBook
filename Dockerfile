@@ -30,9 +30,13 @@ ENV ENCRYPTION_KEY="000000000000000000000000000000000000000000000000000000000000
 # (source-map upload) during Docker build — upload failures would fail the
 # whole build. Real value is available at runtime via Coolify env vars.
 ENV SENTRY_AUTH_TOKEN=""
-# Cap Node.js heap so the build doesn't OOM-kill the Docker daemon when other
-# containers (db / redis / workers / the live app) are running on the VPS.
-ENV NODE_OPTIONS="--max-old-space-size=3072"
+# Tell next.config.ts to skip TypeScript + ESLint checks during image build.
+# They run locally / in CI; skipping them here cuts peak heap by ~600 MB
+# and prevents OOM kills on the Coolify VPS where other containers co-exist.
+ENV DOCKER_BUILD="1"
+# Cap Node.js heap to 1.5 GB — enough for webpack bundling, well below the
+# ~2-3 GB spike that was triggering the kernel OOM killer (exit 255) in CI.
+ENV NODE_OPTIONS="--max-old-space-size=1536"
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
