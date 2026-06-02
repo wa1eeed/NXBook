@@ -70,5 +70,53 @@ export async function GET() {
     return NextResponse.json(checks, { status: 503 })
   }
 
-  return NextResponse.json(checks)
+  // ── Migrations: which are applied / failed / pending ──────
+  // The Prisma client itself caches the schema, so a missing column
+  // shows up as a runtime error on real queries; this surfaces the
+  // truth directly from _prisma_migrations.
+  try {
+    const rows = await prisma.$queryRaw<
+      Array<{
+        migration_name: string
+        finished_at: Date | null
+        rolled_back_at: Date | null
+      }>
+    >`SELECT migration_name, finished_at, rolled_back_at
+      FROM _prisma_migrations
+      ORDER BY started_at DESC LIMIT 10`
+    checks.migrations = rows.map((r) => ({
+      name: r.migration_name,
+      state: r.rolled_back_at
+        ? "rolled_back"
+        : r.finished_at
+          ? "applied"
+          : "pending_or_failed",
+    }))
+    const stuck = rows.filter(
+      (r) => !r.finished_at && !r.rolled_back_at,
+    )
+    if (stuck.length > 0) {
+      checks.ok = false
+      checks.migrationError = `Stuck migrations: ${stuck.map((s) => s.migration_name).join(", ")}`
+    }
+  } catch (err) {
+    checks.migrationsCheck = "FAILED"
+    checks.migrationsCheckError = err instanceof Error ? err.message : String(err)
+  }
+
+  // ── Schema feature checks (catch missing columns explicitly) ──
+  try {
+    const cols = await prisma.$queryRaw<Array<{ column_name: string }>>`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_name = 'Service' AND column_name = 'paymentMode'
+    `
+    checks.schema = {
+      Service_paymentMode: cols.length > 0 ? "present" : "MISSING — migration 20260601090000_service_payment_mode not applied",
+    }
+    if (cols.length === 0) checks.ok = false
+  } catch (err) {
+    checks.schemaCheckError = err instanceof Error ? err.message : String(err)
+  }
+
+  return NextResponse.json(checks, { status: checks.ok ? 200 : 503 })
 }
