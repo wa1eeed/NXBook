@@ -10,6 +10,7 @@ import { MotionList, MotionItem } from "@/components/ui/motion-list"
 import { cn } from "@/lib/utils"
 import { formatTime12 } from "@/lib/time"
 import { KpiCards, type KpiCard } from "./home-client"
+import { SetupChecklist, type SetupStatus } from "./setup-checklist"
 
 const STATUS_STYLE: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300",
@@ -47,6 +48,10 @@ export default async function DashboardHome() {
     waitlistActive,
     totalServices,
     totalCustomers,
+    // Setup checklist signals — cheap counts only.
+    availabilityCount,
+    businessRow,
+    firstBookingRow,
   ] = await Promise.all([
     prisma.booking.count({
       where: {
@@ -79,7 +84,31 @@ export default async function DashboardHome() {
       where: { businessId: ctx.businessId, isActive: true },
     }),
     prisma.customer.count({ where: { businessId: ctx.businessId } }),
+    prisma.serviceAvailability.count({
+      where: { service: { businessId: ctx.businessId, isActive: true } },
+    }),
+    prisma.business.findUnique({
+      where: { id: ctx.businessId },
+      select: { logoUrl: true, brandColor: true, slug: true },
+    }),
+    prisma.booking.findFirst({
+      where: { businessId: ctx.businessId },
+      select: { id: true },
+    }),
   ])
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  const setupStatus: SetupStatus = {
+    hasService: totalServices > 0,
+    hasAvailability: availabilityCount > 0,
+    // Branded = has uploaded a logo OR picked a non-default brand color.
+    // The default seeded color is "#7c3aed" (violet); any other value counts.
+    hasBranding:
+      !!businessRow?.logoUrl ||
+      (businessRow?.brandColor != null && businessRow.brandColor !== "#7c3aed"),
+    hasFirstBooking: !!firstBookingRow,
+    publicUrl: businessRow ? `${appUrl}/${businessRow.slug}` : appUrl,
+  }
 
   const cards: KpiCard[] = [
     { key: "todayBookings", value: todayBookings, trend: todayBookings - yesterdayBookings },
@@ -91,6 +120,8 @@ export default async function DashboardHome() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-bold tracking-tight">{td("home")}</h1>
+
+      <SetupChecklist status={setupStatus} />
 
       <KpiCards cards={cards} />
 

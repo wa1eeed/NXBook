@@ -235,7 +235,19 @@
       "totalCustomers": "Customers",
       "waitlistActive": "Waitlist"
     },
-    "transactions": "Transactions"
+    "transactions": "Transactions",
+    "setup": {
+      "title": "Get NXBook ready",
+      "subtitle": "{done} of {total} done — a few quick steps before your first customer arrives.",
+      "addServices": "Add your services",
+      "addServicesDesc": "What can customers book — duration, price, capacity.",
+      "setAvailability": "Set when you're open",
+      "setAvailabilityDesc": "Weekly time windows per service drive the booking calendar.",
+      "brandIt": "Make it yours",
+      "brandItDesc": "Upload a logo and pick a brand color for the booking page.",
+      "share": "Share your booking link",
+      "shareDesc": "Open your public page and send it to your first customers."
+    }
   },
   "services": {
     "title": "Services",

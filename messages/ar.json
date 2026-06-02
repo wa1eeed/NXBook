@@ -235,7 +235,19 @@
       "totalCustomers": "العملاء",
       "waitlistActive": "قائمة الانتظار"
     },
-    "transactions": "المعاملات"
+    "transactions": "المعاملات",
+    "setup": {
+      "title": "اضبط NXBook للانطلاق",
+      "subtitle": "أكملت {done} من أصل {total} — خطوات سريعة قبل أول عميل.",
+      "addServices": "أضف خدماتك",
+      "addServicesDesc": "ما الذي يمكن للعملاء حجزه — المدة والسعر والسعة.",
+      "setAvailability": "حدد أوقات عملك",
+      "setAvailabilityDesc": "تُحدد فترات الأسبوع لكل خدمة المواعيد المتاحة في صفحة الحجز.",
+      "brandIt": "ضع لمستك الخاصة",
+      "brandItDesc": "ارفع شعارك واختر لون علامتك التجارية لصفحة الحجز.",
+      "share": "شارك رابط الحجز",
+      "shareDesc": "افتح صفحتك العامة وأرسلها لأول عملائك."
+    }
   },
   "services": {
     "title": "الخدمات",
