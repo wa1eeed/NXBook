@@ -139,8 +139,8 @@ export function BookingsClient({
   const [staffId, setStaffId] = useState("")
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
-  // View mode: list or calendar
-  const [viewMode, setViewMode] = useState<"list" | "calendar">("list")
+  // View mode — calendar is the default (1A)
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("calendar")
 
   // Reschedule slide-over state.
   const [resched, setResched] = useState<BookingRow | null>(null)
@@ -321,11 +321,13 @@ export function BookingsClient({
         }
       />
 
-      {/* Calendar view */}
+      {/* Calendar view (default) */}
       {viewMode === "calendar" && (
         <CalendarView
           bookings={bookings}
           waitlistByDay={waitlistByDay}
+          services={services}
+          staff={staff}
           onBookingAction={(id, action) => act(id, action)}
           pending={pending}
         />

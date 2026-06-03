@@ -490,7 +490,12 @@
     "calToday": "اليوم",
     "calNoBookings": "لا توجد حجوزات",
     "calWaitlist": "{n} في الانتظار",
-    "calDayDetail": "حجوزات {date}"
+    "calDayDetail": "حجوزات {date}",
+    "calMonth": "شهر",
+    "calWeek": "أسبوع",
+    "calDay": "يوم",
+    "calAddForDay": "إضافة حجز لهذا اليوم",
+    "calWaitlistLegend": "قائمة الانتظار"
   },
   "waitlist": {
     "confirmed": "تم تأكيد حجزك!",

@@ -490,7 +490,12 @@
     "calToday": "Today",
     "calNoBookings": "No bookings",
     "calWaitlist": "{n} waiting",
-    "calDayDetail": "Bookings for {date}"
+    "calDayDetail": "Bookings for {date}",
+    "calMonth": "Month",
+    "calWeek": "Week",
+    "calDay": "Day",
+    "calAddForDay": "Add booking for this day",
+    "calWaitlistLegend": "Waitlist"
   },
   "waitlist": {
     "confirmed": "Your booking is confirmed!",
