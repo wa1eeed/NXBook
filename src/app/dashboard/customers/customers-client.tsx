@@ -228,9 +228,8 @@ export function CustomersClient({ customers }: { customers: CustomerRow[] }) {
         <MotionList key={`${filter}-${query}-${sort}`} className="flex flex-col gap-2">
           {filtered.map((c) => (
             <MotionItem key={c.id}>
-              <button
-                type="button"
-                onClick={() => openPanel(c)}
+              <Link
+                href={`/dashboard/customers/${c.id}`}
                 className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-start transition-shadow hover:shadow-soft"
               >
                 <span
@@ -271,7 +270,7 @@ export function CustomersClient({ customers }: { customers: CustomerRow[] }) {
                     {c.totalSpent} SAR · {t("bookings")}: {c.totalBookings}
                   </span>
                 </div>
-              </button>
+              </Link>
             </MotionItem>
           ))}
         </MotionList>
