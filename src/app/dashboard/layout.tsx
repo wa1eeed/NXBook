@@ -10,6 +10,7 @@ import { MobileNav } from "@/components/dashboard/mobile-nav"
 import { LocaleSwitcher } from "@/components/locale-switcher"
 import { logoutAction } from "@/lib/auth-actions"
 import { Button } from "@/components/ui/button"
+import { DashboardPageTransition } from "@/components/dashboard/page-transition"
 
 // Protected dashboard shell: resolves the tenant once, applies the
 // business theme (CSS vars), renders the sidebar (desktop) / drawer
@@ -64,7 +65,9 @@ export default async function DashboardLayout({
             </form>
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6">
+          <DashboardPageTransition>{children}</DashboardPageTransition>
+        </main>
       </div>
     </ThemeScope>
   )

@@ -7,11 +7,11 @@ export default async function Page() {
   const ctx = await requireBusiness()
   const locale = await getLocale()
 
-  const [bookings, services, staff, business] = await Promise.all([
+  const [bookings, services, staff, business, waitlists] = await Promise.all([
     prisma.booking.findMany({
       where: { businessId: ctx.businessId },
       orderBy: [{ date: "desc" }, { startTime: "desc" }],
-      take: 200,
+      take: 400,
       include: {
         customer: { select: { name: true, phone: true } },
         service: { select: { nameEn: true, nameAr: true } },
@@ -29,6 +29,14 @@ export default async function Page() {
     prisma.business.findUnique({
       where: { id: ctx.businessId },
       select: { paymentEnabled: true },
+    }),
+    // Waitlist counts per day (active + offered entries)
+    prisma.waitlist.findMany({
+      where: {
+        businessId: ctx.businessId,
+        status: { in: ["WAITING", "OFFERED"] },
+      },
+      select: { date: true },
     }),
   ])
 
@@ -54,6 +62,13 @@ export default async function Page() {
     notes: b.notes,
   }))
 
+  // Build waitlistByDay: { "2026-06-10": 3, ... }
+  const waitlistByDay: Record<string, number> = {}
+  for (const w of waitlists) {
+    const key = w.date.toISOString().slice(0, 10)
+    waitlistByDay[key] = (waitlistByDay[key] ?? 0) + 1
+  }
+
   const serviceOptions = services.map((s) => ({
     id: s.id,
     name: localized(s.nameEn, s.nameAr),
@@ -62,6 +77,7 @@ export default async function Page() {
   return (
     <BookingsClient
       bookings={rows}
+      waitlistByDay={waitlistByDay}
       services={serviceOptions}
       staff={staff}
       paymentEnabled={business?.paymentEnabled ?? false}

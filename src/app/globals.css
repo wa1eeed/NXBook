@@ -203,4 +203,71 @@
     80%  { transform: scale(2.4); opacity: 0;    }
     100% { transform: scale(2.4); opacity: 0;    }
   }
+
+  /* Shimmer loading animation for skeleton screens */
+  .shimmer {
+    background: linear-gradient(90deg, var(--muted) 25%, color-mix(in oklch, var(--muted) 60%, transparent) 50%, var(--muted) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Gradient border on hover */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--primary), color-mix(in oklch, var(--primary) 50%, transparent));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .gradient-border:hover::before { opacity: 1; }
+
+  /* Floating animation for decorative elements */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-8px); }
+  }
+  .animate-float         { animation: float 3s ease-in-out infinite; }
+  .animate-float-delayed { animation: float 3s ease-in-out 1.5s infinite; }
+
+  /* Glow on primary elements */
+  .glow-primary {
+    box-shadow:
+      0 0 20px color-mix(in oklch, var(--primary) 30%, transparent),
+      0 0 40px color-mix(in oklch, var(--primary) 15%, transparent);
+  }
+
+  /* Smooth gradient backgrounds for cards */
+  .card-gradient {
+    background: linear-gradient(135deg, var(--card) 0%, color-mix(in oklch, var(--card) 95%, var(--primary)) 100%);
+  }
+
+  /* Status indicator dot with pulse */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-dot.active {
+    background: oklch(0.7 0.2 145);
+    animation: status-pulse 2s infinite;
+  }
+  @keyframes status-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 oklch(0.7 0.2 145 / 0.4); }
+    50%       { box-shadow: 0 0 0 6px oklch(0.7 0.2 145 / 0); }
+  }
 }

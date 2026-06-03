@@ -20,7 +20,7 @@ export function MotionList({
       animate="show"
       variants={{
         hidden: {},
-        show: { transition: { staggerChildren: 0.05 } },
+        show: { transition: { staggerChildren: 0.06 } },
       }}
     >
       {children}
@@ -41,8 +41,18 @@ export function MotionItem({
     <motion.div
       className={className}
       variants={{
-        hidden: { opacity: 0, y: 8 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+        hidden: { opacity: 0, y: 12, filter: "blur(4px)" },
+        show: {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          transition: {
+            type: "spring",
+            stiffness: 380,
+            damping: 28,
+            mass: 0.8,
+          },
+        },
       }}
     >
       {children}

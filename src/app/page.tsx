@@ -30,6 +30,13 @@ import {
 import { SiteHeader } from "@/components/marketing/site-header"
 import { SiteFooter } from "@/components/marketing/site-footer"
 import { Button } from "@/components/ui/button"
+import {
+  AnimatedHero,
+  AnimatedFeatureGrid,
+  AnimatedStats,
+  AnimatedAgentsShowcase,
+  ScrollReveal,
+} from "@/components/marketing/animated-sections"
 
 // Conversion-focused marketing landing page. Bilingual (RTL/LTR via
 // the cookie locale). Arrow icons flip in RTL with `rtl:rotate-180`.
@@ -142,8 +149,21 @@ export default async function Home() {
       <SiteHeader />
 
       <main className="flex-1">
-        {/* ─── 1. Hero ─────────────────────────────────────── */}
-        <section className="bg-hero-mesh relative overflow-hidden">
+        {/* ─── 1. Hero — animated ──────────────────────────── */}
+        <AnimatedHero
+          headline={`${t("heroTitleA")} ${t("heroTitleB")}`}
+          subheadline={t("heroSubtitle")}
+          ctaPrimary={t("ctaPrimary")}
+          ctaSecondary={t("ctaSecondary")}
+          isAuthed={isAuthed}
+          stats={stats}
+          liveBadgeLabel={t("heroLiveBadge")}
+          trustedByLabel={t("trustedBy")}
+          noCardLabel={t("noCard")}
+        />
+
+        {/* ─── 1b. Hero (static fallback — hidden, kept for SSR structure) */}
+        <section className="bg-hero-mesh relative overflow-hidden hidden">
           <div className="bg-dots absolute inset-0 opacity-40" />
           <div className="relative mx-auto max-w-6xl px-6 pb-12 pt-20 sm:pb-20 sm:pt-28">
             <div className="mx-auto max-w-3xl text-center">
@@ -357,76 +377,54 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* ─── 5. Features ──────────────────────────────────── */}
+        {/* ─── 5. Features — animated scroll reveal ─────────── */}
         <section
           id="features"
           className="border-y border-border bg-muted/30"
         >
           <div className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                {t("featuresTitle")}
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                {t("featuresSubtitle")}
-              </p>
-            </div>
+            <ScrollReveal>
+              <div className="mx-auto max-w-2xl text-center">
+                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  {t("featuresTitle")}
+                </h2>
+                <p className="mt-4 text-lg text-muted-foreground">
+                  {t("featuresSubtitle")}
+                </p>
+              </div>
+            </ScrollReveal>
 
-            <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {features.map((f, i) => (
-                <div
-                  key={i}
-                  className="group rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:shadow-soft"
-                >
-                  <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                    <f.icon className="size-6" />
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold">{f.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {f.desc}
-                  </p>
-                </div>
-              ))}
+            <div className="mt-14">
+              <AnimatedFeatureGrid features={features} />
             </div>
           </div>
         </section>
 
-        {/* ─── 6. AI Agents showcase (the moat) ─────────────── */}
+        {/* ─── 6. AI Agents showcase (the moat) — animated ─── */}
         <section className="relative mx-auto max-w-6xl px-6 py-20 sm:py-28">
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-primary">
-              <Zap className="size-4" />
-              {t("agentsKicker")}
-            </span>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              {t("agentsTitle")}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              {t("agentsSubtitle")}
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-primary">
+                <Zap className="size-4" />
+                {t("agentsKicker")}
+              </span>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+                {t("agentsTitle")}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {t("agentsSubtitle")}
+              </p>
+            </div>
+          </ScrollReveal>
 
-          <div className="mt-14 grid gap-5 sm:grid-cols-2">
-            {agents.map((a, i) => (
-              <div
-                key={i}
-                className={`relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${a.tint} p-7 transition-all hover:-translate-y-1 hover:shadow-soft`}
-              >
-                <div className="flex items-start gap-4">
-                  <span
-                    className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${a.iconBg}`}
-                  >
-                    <a.icon className="size-6" />
-                  </span>
-                  <div>
-                    <h3 className="text-lg font-semibold">{a.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {a.desc}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="mt-14">
+            <AnimatedAgentsShowcase agents={agents.map((a) => ({
+              color: a.tint,
+              iconBg: a.iconBg,
+              icon: a.icon,
+              title: a.title,
+              desc: a.desc,
+            }))} />
           </div>
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
@@ -437,29 +435,30 @@ export default async function Home() {
         {/* ─── 7. How it works ──────────────────────────────── */}
         <section id="how" className="border-y border-border bg-muted/30">
           <div className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                {t("howTitle")}
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                {t("howSubtitle")}
-              </p>
-            </div>
+            <ScrollReveal>
+              <div className="mx-auto max-w-2xl text-center">
+                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  {t("howTitle")}
+                </h2>
+                <p className="mt-4 text-lg text-muted-foreground">
+                  {t("howSubtitle")}
+                </p>
+              </div>
+            </ScrollReveal>
 
             <div className="mt-14 grid gap-8 md:grid-cols-3">
-              {steps.map((s) => (
-                <div
-                  key={s.n}
-                  className="relative rounded-2xl bg-card p-7 shadow-soft"
-                >
-                  <span className="flex size-11 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                    {s.n}
-                  </span>
-                  <h3 className="mt-5 text-lg font-semibold">{s.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {s.desc}
-                  </p>
-                </div>
+              {steps.map((s, i) => (
+                <ScrollReveal key={s.n} delay={i * 0.12} direction="up">
+                  <div className="relative rounded-2xl bg-card p-7 shadow-soft gradient-border">
+                    <span className="flex size-11 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground glow-primary">
+                      {s.n}
+                    </span>
+                    <h3 className="mt-5 text-lg font-semibold">{s.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {s.desc}
+                    </p>
+                  </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>

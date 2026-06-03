@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import React, { useMemo, useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useLocale, useTranslations } from "next-intl"
@@ -17,6 +17,8 @@ import {
   CalendarClock,
   Plus,
   Download,
+  LayoutList,
+  Calendar,
 } from "lucide-react"
 import {
   transitionBooking,
@@ -31,6 +33,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { formatTime12 } from "@/lib/time"
 import { MotionList, MotionItem } from "@/components/ui/motion-list"
 import { cn } from "@/lib/utils"
+import { CalendarView } from "./calendar-view"
 
 type StatusFilter =
   | "all"
@@ -108,11 +111,13 @@ function startOfWeek(d: Date) {
 
 export function BookingsClient({
   bookings,
+  waitlistByDay = {},
   services,
   staff,
   paymentEnabled,
 }: {
   bookings: BookingRow[]
+  waitlistByDay?: Record<string, number>
   services: Option[]
   staff: Option[]
   paymentEnabled: boolean
@@ -133,6 +138,9 @@ export function BookingsClient({
   const [serviceId, setServiceId] = useState("")
   const [staffId, setStaffId] = useState("")
   const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  // View mode: list or calendar
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list")
 
   // Reschedule slide-over state.
   const [resched, setResched] = useState<BookingRow | null>(null)
@@ -273,17 +281,58 @@ export function BookingsClient({
         title={t("title")}
         description={t("subtitle")}
         action={
-          <Button asChild>
-            <Link href="/dashboard/bookings/new">
-              <Plus className="size-4" />
-              {t("newBooking")}
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                aria-label={t("viewList")}
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-md transition-all",
+                  viewMode === "list"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <LayoutList className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("calendar")}
+                aria-label={t("viewCalendar")}
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-md transition-all",
+                  viewMode === "calendar"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Calendar className="size-4" />
+              </button>
+            </div>
+            <Button asChild>
+              <Link href="/dashboard/bookings/new">
+                <Plus className="size-4" />
+                {t("newBooking")}
+              </Link>
+            </Button>
+          </div>
         }
       />
 
-      {/* Filters bar */}
-      <div className="flex flex-col gap-3">
+      {/* Calendar view */}
+      {viewMode === "calendar" && (
+        <CalendarView
+          bookings={bookings}
+          waitlistByDay={waitlistByDay}
+          onBookingAction={(id, action) => act(id, action)}
+          pending={pending}
+        />
+      )}
+
+      {/* List view: filters + booking cards */}
+      {viewMode === "list" && (<><div className="flex flex-col gap-3">
         {/* Status tabs */}
         <div className="flex flex-wrap gap-1">
           {STATUS_FILTERS.map((f) => (
@@ -396,16 +445,9 @@ export function BookingsClient({
         </div>
       </div>
 
-      {bookings.length === 0 ? (
-        <EmptyState
-          icon={CalendarDays}
-          title={t("empty")}
-          description={t("emptyDesc")}
-        />
-      ) : filtered.length === 0 ? (
-        <EmptyState icon={Search} title={t("resultsCount", { n: 0 })} />
-      ) : (
-        <>
+      {bookings.length === 0 ? <EmptyState icon={CalendarDays} title={t("empty")} description={t("emptyDesc")} />
+      : filtered.length === 0 ? <EmptyState icon={Search} title={t("resultsCount", { n: 0 })} />
+      : (<React.Fragment>
           <label className="flex w-fit items-center gap-2 text-sm text-muted-foreground">
             <input
               type="checkbox"
@@ -538,8 +580,8 @@ export function BookingsClient({
               </MotionItem>
             ))}
           </MotionList>
-        </>
-      )}
+      </React.Fragment>)}
+      </>)}
 
       {/* Sticky bulk-action bar */}
       {selected.size > 0 && (

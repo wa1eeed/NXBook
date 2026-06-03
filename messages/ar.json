@@ -482,7 +482,15 @@
     "nSelected": "{n} محدد",
     "copyPhone": "نسخ",
     "copied": "تم النسخ",
-    "shortId": "#"
+    "shortId": "#",
+    "viewList": "عرض القائمة",
+    "viewCalendar": "عرض التقويم",
+    "calPrev": "الشهر السابق",
+    "calNext": "الشهر التالي",
+    "calToday": "اليوم",
+    "calNoBookings": "لا توجد حجوزات",
+    "calWaitlist": "{n} في الانتظار",
+    "calDayDetail": "حجوزات {date}"
   },
   "waitlist": {
     "confirmed": "تم تأكيد حجزك!",

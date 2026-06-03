@@ -482,7 +482,15 @@
     "nSelected": "{n} selected",
     "copyPhone": "Copy",
     "copied": "Copied!",
-    "shortId": "#"
+    "shortId": "#",
+    "viewList": "List view",
+    "viewCalendar": "Calendar view",
+    "calPrev": "Previous month",
+    "calNext": "Next month",
+    "calToday": "Today",
+    "calNoBookings": "No bookings",
+    "calWaitlist": "{n} waiting",
+    "calDayDetail": "Bookings for {date}"
   },
   "waitlist": {
     "confirmed": "Your booking is confirmed!",
