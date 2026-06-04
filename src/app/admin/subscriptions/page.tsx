@@ -76,7 +76,7 @@ export default async function AdminSubscriptionsPage() {
 
 function Kpi({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="card-lift rounded-xl border border-border bg-card p-4">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className={accent ? "mt-1 text-2xl font-bold text-primary" : "mt-1 text-2xl font-bold"}>
         {value}

@@ -174,7 +174,7 @@ function ScoreBar({ label, score, max = 10, color }: { label: string; score: num
 
 function KpiCard({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string | number; sub?: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-border bg-card p-4">
+    <div className="card-lift flex flex-col gap-1 rounded-xl border border-border bg-card p-4">
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
         <span className="text-xs">{label}</span>
