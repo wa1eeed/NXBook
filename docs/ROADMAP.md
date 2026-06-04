@@ -12,6 +12,31 @@ Domains · + Documentation.
 
 ---
 
+## ✅ UX/Product Expansion — 8 phases (COMPLETE, 2026-06-04)
+
+Shipped on top of Phase 1. Full detail in `CHANGELOG.md`. Summary:
+
+1. **Calendar as default bookings view** — month/week/day, day-detail side
+   panel, filters (service/staff/customer).
+2. **Customer detail page** — `/dashboard/customers/[id]` with Profile /
+   Timeline / Bookings / Statistics tabs.
+3. **Notification Center** — `InAppNotification` model, header bell with
+   30s polling, `/dashboard/notifications` page.
+4. **Subscription enforcement + billing** — `subscription-guard` (fail-open),
+   trial/grace banners, `/dashboard/billing`, monthly/yearly pricing,
+   admin extend-trial.
+5. **Public page + confirmation** — social/location/meeting config,
+   `/[slug]/confirmation/[bookingId]` with ICS + share + cancel.
+6. **Admin** — `/admin/subscriptions`, business-detail trial controls.
+7. **Manual booking** — calendar quick-add (date prefill) + send-confirmation
+   toggle.
+8. **Responsive + micro-interactions** — global utilities, RTL/dark-mode audit.
+
+Three new migrations: `in_app_notifications`, `subscription_enforcement`,
+`business_public_config`.
+
+---
+
 ## ⏭️ Phase 2 — Public API + Developer Portal (DEFERRED — not started)
 
 > **Status:** registered for later. Do **not** start without an explicit go.

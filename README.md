@@ -22,8 +22,15 @@ RTL/LTR throughout.
   cancellation or no-show the next person is auto-offered the slot with a 30-min
   confirm window, then the queue advances. The flagship metric is
   **waitlist conversion / "revenue saved."**
+- **Bookings calendar** — month / week / day views with a per-day side panel,
+  inline lifecycle actions, and service/staff/customer filters (default view).
+- **Customer profiles** — full `/dashboard/customers/[id]` page with a complete
+  event timeline, score bars, and per-customer statistics.
 - **Notifications** — WhatsApp + SMS (Twilio) and email (Resend), with 24h/1h
-  reminders and instant booking confirmations, run on background workers.
+  reminders and instant booking confirmations, run on background workers; plus
+  an in-app **Notification Center** (header bell + dedicated page).
+- **Booking confirmation** — a public confirmation page with add-to-calendar
+  (ICS + Google Calendar), share links, and customer self-cancel.
 - **AI agents** — Waitlist, Follow-up, Recovery (win-back), and Analytics
   agents on a plugin architecture, metered against a prepaid credit balance.
 - **Reports** — revenue, attendance/no-show rates, peak hours, daily volume,
@@ -32,7 +39,11 @@ RTL/LTR throughout.
   `businessId`, resolved from the session (never the client).
 - **Onboarding** — a 4-step wizard (language → business-type template → slug
   with live availability check → branding) that provisions a tenant in minutes.
-- **Billing** — Moyasar subscriptions (SAR) + prepaid AI credits.
+- **Billing & subscriptions** — Moyasar subscriptions (SAR) + prepaid AI
+  credits; trial/grace enforcement, a `/dashboard/billing` page, and an admin
+  subscriptions overview.
+- **Per-service payment mode** — each service is pay-on-arrival or pay-online,
+  with 12-hour (AM/PM) times throughout the product.
 - **Custom domains** — connect your own domain with DNS (TXT + A) verification
   and transparent domain masking.
 - **Security** — Zod validation everywhere, per-IP/per-tenant rate limiting,

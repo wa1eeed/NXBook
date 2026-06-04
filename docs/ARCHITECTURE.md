@@ -71,22 +71,50 @@ thin wrapper rather than a rewrite.
 
 ## 3. Data model (Prisma)
 
-27 models. The core entities:
+The core entities:
 
 - **Identity & tenancy:** `User`, `Session`, `Business`, `BusinessMember`.
 - **Billing:** `Plan`, `Subscription`, `Invoice`, `CreditAccount`, `CreditTx`,
-  `BusinessAIConfig`.
+  `BusinessAIConfig`, `Transaction`, `PaymentGateway`.
 - **Catalog:** `Service`, `ServiceAvailability`, `BusinessHoliday`, `Staff`,
   `StaffService`, `StaffLeave`.
 - **Booking:** `Customer`, `Booking`, `Waitlist`.
 - **AI:** `Agent`, `AgentLog`.
-- **Ops:** `NotificationTemplate`, `NotificationLog`, `Report`, `AuditLog`,
-  `CustomDomain`, `PlatformConfig`.
+- **Ops:** `NotificationTemplate`, `NotificationLog`, `InAppNotification`,
+  `Report`, `AuditLog`, `CustomDomain`, `PlatformConfig`,
+  `PlatformAnnouncement`.
+
+Notable columns added during the 2026-06 expansion:
+- `Service.paymentMode` (`ON_ARRIVAL` | `ONLINE`) — per-service payment gate.
+- `ServiceAvailability` unique index `[serviceId, dayOfWeek, startTime]` —
+  blocks duplicate availability windows.
+- `Subscription.gracePeriodHours` — trial grace window (default 48).
+- `Business.socialLinks` / `locationUrl` / `meetingConfig` (JSON) — public-page
+  config consumed by `/[slug]` and the booking-confirmation page.
+- `InAppNotification` — tenant-facing dashboard notification feed (distinct
+  from `NotificationLog`, which tracks outbound SMS/WhatsApp/email).
 
 Conventions: `cuid()` ids; enums for fixed state sets; composite uniqueness
 that models reality (`[businessId, phone]` for customers, `[businessId, type]`
 for agents, `[businessId, type, period]` for cached reports); soft-delete via
 status flags where history matters.
+
+### Subscription enforcement
+
+`src/lib/subscription-guard.ts#checkSubscriptionAccess(businessId)` is called
+in the dashboard layout. It returns one of OK / TRIALING / GRACE_PERIOD /
+EXPIRED / SUSPENDED / NO_SUBSCRIPTION. The layout hard-redirects EXPIRED and
+SUSPENDED to `/pricing`; TRIALING(≤3d) and GRACE_PERIOD render a banner. The
+guard is **fail-open**: any query error resolves to a non-blocking state so an
+infrastructure issue (e.g. a missing column during a deploy window) can never
+lock every tenant out of the dashboard.
+
+### In-app notifications
+
+`src/lib/notifications-center.ts#createNotification()` (never throws) is called
+from `booking-lifecycle.ts` on new/cancel/no-show. The dashboard header bell
+polls `GET /api/notifications` every 30s; `POST /api/notifications/mark-read`
+clears the unread count. Both API routes resolve the tenant from the session.
 
 ---
 

@@ -13,6 +13,115 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## UX/Product Expansion — 8-Phase Build (2026-06-04)
+
+A large feature + UX expansion delivered in eight coordinated phases. Each
+phase ended with a green `npm run build`, `tsc=0`, and EN/AR i18n parity.
+i18n grew from **858 → 1010** keys (full parity maintained throughout).
+
+### Phase 1 — Calendar as the default bookings view
+- `/dashboard/bookings` now opens the **calendar** by default (list is the
+  secondary toggle).
+- `src/app/dashboard/bookings/calendar-view.tsx` — month / week / day modes:
+  - **Month**: day cells show the first 2 customer **names** (+N overflow),
+    status-coloured (PENDING amber / CONFIRMED blue / ATTENDED green /
+    NO_SHOW red), waitlist badge, today ring. Click → side **panel** (not a
+    popup) with that day's bookings sorted by time + inline actions
+    (confirm / attend / no-show / cancel) + "Add booking for this day".
+  - **Week**: hour-grid timeline (6 AM–10 PM) with name chips per day column.
+  - **Day**: vertical timeline with hour markers + full booking cards.
+  - Toolbar: prev / next / today nav, service filter, staff filter, customer
+    name/phone search.
+- `bookings/page.tsx` now also loads `waitlistByDay` counts.
+
+### Phase 2 — Customer detail page with full timeline
+- `src/app/dashboard/customers/[id]/` — a full page (replaces the slide-over):
+  - Breadcrumb + header (avatar, VIP/blocked badges, phone, email, member-since).
+  - **Profile** tab: KPIs (total bookings / spend / avg spend / last visit),
+    no-show & loyalty score bars, inline notes editor, VIP + block toggles.
+  - **Timeline** tab: every event with timestamp + relative time + type filter
+    (booking created/confirmed/attended/no-show/cancelled, waitlist
+    joined/offered/confirmed, payment).
+  - **Bookings** tab: filterable list + new-booking CTA.
+  - **Statistics** tab: top services bar chart + 6-month visit trend.
+- Customer list rows now link to `/dashboard/customers/[id]`.
+
+### Phase 3 — Notification Center
+- **Schema:** new `InAppNotification` model (migration
+  `20260604120000_in_app_notifications`).
+- `src/lib/notifications-center.ts` — `createNotification` (never throws) +
+  `markRead` / `markAllRead` / `countUnread` / `getNotifications`. Wired into
+  `booking-lifecycle.ts` (new booking / cancel / no-show).
+- **Bell** in the dashboard header (`notification-bell.tsx`): unread badge,
+  animated dropdown, type-coded icons, mark-all-read, **30-second polling**.
+- API routes: `GET /api/notifications`, `POST /api/notifications/mark-read`.
+- Full page `/dashboard/notifications` (type filter + search + pagination).
+
+### Phase 4 — SaaS subscription enforcement + billing
+- **Schema:** `Subscription.gracePeriodHours` (migration
+  `20260604130000_subscription_enforcement`); `Plan.trialDays` +
+  `isTrialUpgradeForced` already existed.
+- `src/lib/subscription-guard.ts` — `checkSubscriptionAccess()` returns
+  OK / TRIALING / GRACE_PERIOD / EXPIRED / SUSPENDED / NO_SUBSCRIPTION. It is
+  **fail-open** (a query error never locks tenants out).
+- Dashboard layout enforces it: EXPIRED → `/pricing?reason=trial_expired`,
+  SUSPENDED → `/pricing?reason=suspended`, GRACE_PERIOD / TRIALING(≤3d) →
+  `SubscriptionBanner` at the top of every page.
+- `/pricing` improved: monthly/yearly toggle with savings %, elevated popular
+  plan, trial-expired/suspended banner, per-tier checkout spinner.
+- New `/dashboard/billing`: current plan, renewal/trial date, cancel
+  (`cancelAtPeriodEnd`) + resume, invoice history. Actions audited.
+- Admin: `extendTrialAction` (+14 days) on the business detail page.
+
+### Phase 5 — Enhanced public page + booking confirmation
+- **Schema:** `Business.socialLinks` / `locationUrl` / `meetingConfig` (JSON,
+  migration `20260604140000_business_public_config`).
+- Settings **"Public Page"** tab: social links, Google-Maps location +
+  address, default meeting type (in-person / Meet / Teams / Zoom / custom).
+  `savePublicPageAction` (requireBusiness + canManage + recordAudit + Zod).
+- `/[slug]` footer: social icon row, WhatsApp contact button, location link.
+- New `/[slug]/confirmation/[bookingId]`: celebratory confirmation with
+  details, location/meeting link, **add-to-calendar** (ICS + Google
+  Calendar), **share** (WhatsApp / Telegram / Email), and a cancel action.
+  `src/lib/calendar-links.ts` provides the pure ICS/link builders. The public
+  booking flow now redirects here on success.
+
+### Phase 6 — Comprehensive admin panel
+- New `/admin/subscriptions`: KPIs (active / trialing / cancelled / MRR /
+  7-day renewals) + filterable, searchable table linking to business detail.
+- Admin sidebar gains a Subscriptions item.
+- Business detail: "Extend trial" button. (Overview / bookings / customers /
+  revenue / audit tabs and the recharts overview existed already.)
+
+### Phase 7 — Enhanced manual booking creation
+- `/dashboard/bookings/new`: date **prefill** from `?date=` (powers the
+  calendar quick-add) + a "Send confirmation to customer" toggle that fires
+  `onBookingCreated` (WhatsApp + 24h/1h reminders).
+
+### Phase 8 — Responsive design + micro-interactions
+- `globals.css` micro-interaction utilities: `.press-feedback`, `.card-lift`,
+  `.animate-shake`, `.animate-success-pop`, all gated by
+  `prefers-reduced-motion`.
+- Verified mobile-first responsiveness + dark mode + zero physical CSS
+  (left/right) across all new components (RTL-safe).
+
+### Production fixes (during/after the 8 phases)
+- **RSC boundary crash** on the marketing landing page: server `page.tsx`
+  passed Lucide icon *functions* to client components → 500. Fixed by passing
+  icon **names** resolved via an `ICON_MAP` in `animated-sections.tsx`.
+  (Build was green; caught by running the standalone prod server locally.)
+- **`/api/apply-migration`** generalized to apply all pending migrations
+  idempotently (and record them in `_prisma_migrations`) for cases where the
+  Coolify deploy doesn't run `migrate deploy`.
+
+> **Ops note:** the three 2026-06-04 migrations had to be applied **manually**
+> to production (via psql) because the Coolify auto-deploy did not run
+> `prisma migrate deploy`. Production DB user = `NXBook`, database = `postgres`.
+> Root cause of the stalled deploy is still under investigation — see
+> `docs/DEPLOYMENT.md`.
+
+---
+
 ## Post-Launch — Production Hardening + UX Polish (2026-06-01)
 
 Everything below was added **after Phase 1** during first production deployment

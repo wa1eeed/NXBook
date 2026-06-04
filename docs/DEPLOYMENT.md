@@ -84,3 +84,35 @@ Everything else (the Docker images, the app) is unchanged.
 - **Backups:** snapshot Postgres regularly; Redis is a cache/queue (BullMQ uses
   AOF in the dev compose).
 - **Monitoring:** Sentry captures app + worker errors with the environment tag.
+- **`/api/health`** reports DB connectivity, table counts, the list of applied
+  migrations (name + state), and key schema columns — hit it after every deploy
+  to confirm migrations landed.
+
+## Migrations on deploy (IMPORTANT — known issue)
+
+`start.sh` runs `prisma migrate deploy` before `node server.js`, with a
+self-healing retry (it marks any `failed` migration rolled-back and retries).
+All migration SQL is written idempotently (`IF NOT EXISTS`, FK existence
+guards) so a replay is a no-op.
+
+**Observed 2026-06-04:** on at least one Coolify deploy the app code shipped but
+`migrate deploy` did **not** apply the three new migrations, leaving the prod DB
+missing columns/tables and 500-ing `/[slug]`, the dashboard, and onboarding.
+Two recovery paths exist:
+
+1. **`POST /api/apply-migration`** with header
+   `x-migration-secret: <MIGRATION_SECRET>` — applies all pending migrations
+   idempotently and records them in `_prisma_migrations`. (One-time helper;
+   delete the route once the deploy pipeline is trusted.)
+2. **Direct psql** (Coolify → Postgres container terminal). Note the prod
+   credentials: **user `NXBook`, database `postgres`** (not `postgres`/`nxbook`).
+   Connect with `psql -U NXBook -d postgres`, run the migration SQL, then
+   insert rows into `_prisma_migrations` (no `ON CONFLICT` — `migration_name`
+   has no unique constraint; use `WHERE NOT EXISTS`).
+
+After recovery, verify with `/api/health` that every migration shows
+`"state": "applied"`.
+
+> **Open item:** the root cause of `migrate deploy` not running on auto-deploy
+> is still under investigation — capture the full Coolify deployment log
+> (build + start phases) on the next deploy to diagnose.
