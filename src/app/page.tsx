@@ -63,13 +63,16 @@ export default async function Home() {
   // no duplicate hints or confusing buttons appear on the page itself.
   const isAuthed = !!session?.user?.id
 
+  // Feature/agent icons are passed to CLIENT components, so they must be
+  // string names (React forbids passing component functions across the RSC
+  // boundary). The client resolves them via its ICON_MAP.
   const features = [
-    { icon: CalendarCheck, title: t("f1Title"), desc: t("f1Desc") },
-    { icon: ListChecks, title: t("f2Title"), desc: t("f2Desc") },
-    { icon: BellRing, title: t("f3Title"), desc: t("f3Desc") },
-    { icon: Bot, title: t("f4Title"), desc: t("f4Desc") },
-    { icon: BarChart3, title: t("f5Title"), desc: t("f5Desc") },
-    { icon: Globe, title: t("f6Title"), desc: t("f6Desc") },
+    { icon: "CalendarCheck", title: t("f1Title"), desc: t("f1Desc") },
+    { icon: "ListChecks", title: t("f2Title"), desc: t("f2Desc") },
+    { icon: "BellRing", title: t("f3Title"), desc: t("f3Desc") },
+    { icon: "Bot", title: t("f4Title"), desc: t("f4Desc") },
+    { icon: "BarChart3", title: t("f5Title"), desc: t("f5Desc") },
+    { icon: "Globe", title: t("f6Title"), desc: t("f6Desc") },
   ]
 
   const verticals = [
@@ -88,10 +91,10 @@ export default async function Home() {
   ]
 
   const agents = [
-    { icon: Users, title: t("agent1Title"), desc: t("agent1Desc"), tint: "from-violet-500/15 to-indigo-500/10", iconBg: "bg-violet-500/15 text-violet-600 dark:text-violet-300" },
-    { icon: MessageCircle, title: t("agent2Title"), desc: t("agent2Desc"), tint: "from-rose-500/15 to-pink-500/10", iconBg: "bg-rose-500/15 text-rose-600 dark:text-rose-300" },
-    { icon: RotateCcw, title: t("agent3Title"), desc: t("agent3Desc"), tint: "from-amber-500/15 to-orange-500/10", iconBg: "bg-amber-500/15 text-amber-600 dark:text-amber-300" },
-    { icon: BarChart3, title: t("agent4Title"), desc: t("agent4Desc"), tint: "from-emerald-500/15 to-teal-500/10", iconBg: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300" },
+    { icon: "Users", title: t("agent1Title"), desc: t("agent1Desc"), tint: "from-violet-500/15 to-indigo-500/10", iconBg: "bg-violet-500/15 text-violet-600 dark:text-violet-300" },
+    { icon: "MessageCircle", title: t("agent2Title"), desc: t("agent2Desc"), tint: "from-rose-500/15 to-pink-500/10", iconBg: "bg-rose-500/15 text-rose-600 dark:text-rose-300" },
+    { icon: "RotateCcw", title: t("agent3Title"), desc: t("agent3Desc"), tint: "from-amber-500/15 to-orange-500/10", iconBg: "bg-amber-500/15 text-amber-600 dark:text-amber-300" },
+    { icon: "BarChart3", title: t("agent4Title"), desc: t("agent4Desc"), tint: "from-emerald-500/15 to-teal-500/10", iconBg: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300" },
   ]
 
   const steps = [

@@ -34,9 +34,37 @@ import {
   Users,
   Sparkles,
   CheckCircle2,
+  ListChecks,
+  BellRing,
+  BarChart3,
+  Globe,
+  MessageCircle,
+  RotateCcw,
+  type LucideIcon,
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+
+// Icon registry — server components pass icon NAMES (strings) across the
+// RSC boundary (React forbids passing component functions to client
+// components); we resolve them to Lucide components here on the client.
+const ICON_MAP: Record<string, LucideIcon> = {
+  CalendarCheck,
+  ListChecks,
+  BellRing,
+  Bot,
+  BarChart3,
+  Globe,
+  Users,
+  MessageCircle,
+  RotateCcw,
+  TrendingUp,
+  Sparkles,
+}
+
+function resolveIcon(name: string): LucideIcon {
+  return ICON_MAP[name] ?? Sparkles
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared helpers
@@ -448,8 +476,8 @@ export function AnimatedHero({
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface Feature {
-  /** Lucide icon component */
-  icon: React.ElementType
+  /** Icon NAME (string key into ICON_MAP) — never a component function */
+  icon: string
   title: string
   desc: string
   /** Tailwind color class prefix e.g. "violet" → bg-violet-500/10, text-violet-600 */
@@ -501,7 +529,7 @@ export function AnimatedFeatureGrid({ features }: AnimatedFeatureGridProps) {
     >
       {features.map((feature, i) => {
         const palette = FEATURE_COLORS[i % FEATURE_COLORS.length]
-        const Icon = feature.icon
+        const Icon = resolveIcon(feature.icon)
 
         return (
           <motion.div
@@ -690,8 +718,8 @@ interface AgentCard {
   color: string
   /** Icon color + bg classes e.g. "bg-violet-500/15 text-violet-600 dark:text-violet-300" */
   iconBg: string
-  /** Lucide icon component */
-  icon: React.ElementType
+  /** Icon NAME (string key into ICON_MAP) — never a component function */
+  icon: string
   title: string
   desc: string
 }
@@ -729,7 +757,7 @@ export function AnimatedAgentsShowcase({ agents }: AnimatedAgentsShowcaseProps) 
       animate={isInView ? "visible" : "hidden"}
     >
       {agents.map((agent, i) => {
-        const Icon = agent.icon
+        const Icon = resolveIcon(agent.icon)
         return (
           <motion.div
             key={i}
