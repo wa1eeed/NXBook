@@ -166,8 +166,8 @@ export function BookingFlow({
           phone,
         })
         if (res.ok) {
-          setPosition(null)
-          setStep("done")
+          // Route to the rich confirmation page (calendar links, share, cancel).
+          window.location.href = `/${slug}/confirmation/${res.bookingId}`
         } else setError(res.error)
       }
     })

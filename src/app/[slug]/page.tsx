@@ -1,11 +1,23 @@
 import { notFound } from "next/navigation"
 import { getTranslations } from "next-intl/server"
-import { CalendarCheck, ShieldCheck, Clock } from "lucide-react"
+import {
+  CalendarCheck, ShieldCheck, Clock, Camera, AtSign, Music,
+  Hash, Share2, Globe, MessageCircle, MapPin,
+} from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import { resolveTheme } from "@/lib/theme"
 import { ThemeScope } from "@/components/theme/theme-provider"
 import { LocaleSwitcher } from "@/components/locale-switcher"
 import { BookingFlow, type PublicService } from "./booking-flow"
+
+const SOCIAL_ICONS: Record<string, typeof Globe> = {
+  instagram: Camera,
+  twitter: AtSign,
+  tiktok: Music,
+  snapchat: Hash,
+  linkedin: Share2,
+  website: Globe,
+}
 
 // Public tenant booking portal. Resolves the business by slug (direct
 // /{slug} or via the subdomain/custom-domain rewrite in middleware.ts),
@@ -30,6 +42,13 @@ export default async function TenantPage({
   })
 
   if (!business) notFound()
+
+  const asObj = (v: unknown): Record<string, string> =>
+    v && typeof v === "object" && !Array.isArray(v)
+      ? (v as Record<string, string>)
+      : {}
+  const social = asObj(business.socialLinks)
+  const locationInfo = asObj(business.locationUrl)
 
   const theme = resolveTheme(business.themeConfig)
   const accent = business.brandColor
@@ -108,6 +127,62 @@ export default async function TenantPage({
             />
           )}
         </div>
+
+        {/* Contact / social / location footer */}
+        {(Object.keys(social).length > 0 ||
+          locationInfo.googleMaps ||
+          locationInfo.address ||
+          social.whatsapp) && (
+          <div className="mt-8 flex flex-col items-center gap-4 rounded-2xl border border-border bg-card/60 p-6 text-center">
+            {/* Social icons */}
+            {Object.entries(SOCIAL_ICONS).some(([k]) => social[k]) && (
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {Object.entries(SOCIAL_ICONS).map(([key, Icon]) =>
+                  social[key] ? (
+                    <a
+                      key={key}
+                      href={social[key]}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={key}
+                      className="flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:-translate-y-0.5 hover:text-foreground"
+                      style={{ borderColor: `color-mix(in oklch, ${accent} 30%, transparent)` }}
+                    >
+                      <Icon className="size-4" />
+                    </a>
+                  ) : null,
+                )}
+              </div>
+            )}
+
+            {/* WhatsApp contact */}
+            {social.whatsapp && (
+              <a
+                href={`https://wa.me/${social.whatsapp.replace(/[^0-9]/g, "")}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white"
+                style={{ backgroundColor: accent }}
+              >
+                <MessageCircle className="size-4" />
+                {t("contactWhatsApp")}
+              </a>
+            )}
+
+            {/* Location */}
+            {(locationInfo.address || locationInfo.googleMaps) && (
+              <a
+                href={locationInfo.googleMaps || undefined}
+                target={locationInfo.googleMaps ? "_blank" : undefined}
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <MapPin className="size-4" />
+                {locationInfo.address || t("viewLocation")}
+              </a>
+            )}
+          </div>
+        )}
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
           {t("poweredBy")}

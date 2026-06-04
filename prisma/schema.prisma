@@ -210,6 +210,10 @@ model Business {
   transactions      Transaction[]
   paymentGateway       PaymentGateway?
   inAppNotifications   InAppNotification[]
+  // Public-page config (Phase 5)
+  socialLinks          Json?   // { instagram, twitter, snapchat, tiktok, linkedin, website, whatsapp }
+  locationUrl          Json?   // { googleMaps, address, lat, lng }
+  meetingConfig        Json?   // { type: "in_person"|"google_meet"|"microsoft_teams"|"zoom"|"custom", url }
   @@index([slug])
 }
 

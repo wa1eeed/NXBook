@@ -263,3 +263,34 @@ export async function initiateBookingPaymentAction(
     return { ok: true, paymentUrl: `${appUrl}/payment/result?ref=${tx.id}&slug=${d.slug}&fallback=1` }
   }
 }
+
+// ─── Public booking cancellation (Phase 5) ───────────────────
+// Customers can cancel their own booking from the confirmation page.
+// We resolve the business from the slug, verify the booking belongs to
+// it, and only allow cancelling PENDING/CONFIRMED bookings.
+
+export type PublicCancelResult = { ok: true } | { ok: false; error: string }
+
+export async function cancelBookingPublicAction(
+  slug: string,
+  bookingId: string,
+): Promise<PublicCancelResult> {
+  if (await tooManyRequests("cancel")) return { ok: false, error: "rateLimited" }
+
+  const biz = await resolveBusiness(slug)
+  if (!biz) return { ok: false, error: "notFound" }
+
+  const booking = await prisma.booking.findFirst({
+    where: { id: bookingId, businessId: biz.id },
+    select: { id: true, status: true },
+  })
+  if (!booking) return { ok: false, error: "notFound" }
+  if (booking.status !== "PENDING" && booking.status !== "CONFIRMED") {
+    return { ok: false, error: "cannotCancel" }
+  }
+
+  const { cancelBooking } = await import("@/lib/booking-lifecycle")
+  const res = await cancelBooking(biz.id, bookingId, "customer_cancelled")
+  if (!res.ok) return { ok: false, error: res.error }
+  return { ok: true }
+}

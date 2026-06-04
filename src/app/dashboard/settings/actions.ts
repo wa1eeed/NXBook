@@ -299,3 +299,66 @@ export async function disconnectGatewayAction(): Promise<ActionResult> {
   revalidatePath("/dashboard/settings")
   return { ok: true }
 }
+
+// ─── Public-page config (Phase 5) ─────────────────────────────
+
+const urlOrEmpty = z.string().trim().max(300).optional().or(z.literal(""))
+
+const publicPageSchema = z.object({
+  social: z.object({
+    instagram: urlOrEmpty,
+    twitter: urlOrEmpty,
+    snapchat: urlOrEmpty,
+    tiktok: urlOrEmpty,
+    linkedin: urlOrEmpty,
+    website: urlOrEmpty,
+    whatsapp: urlOrEmpty,
+  }),
+  location: z.object({
+    googleMaps: urlOrEmpty,
+    address: z.string().trim().max(300).optional().or(z.literal("")),
+  }),
+  meeting: z.object({
+    type: z.enum(["in_person", "google_meet", "microsoft_teams", "zoom", "custom"]),
+    url: urlOrEmpty,
+  }),
+})
+
+export type PublicPageInput = z.infer<typeof publicPageSchema>
+
+export async function savePublicPageAction(
+  data: PublicPageInput,
+): Promise<ActionResult> {
+  const ctx = await requireBusiness()
+  if (!canManage(ctx.role)) return { ok: false, error: "forbidden" }
+
+  const parsed = publicPageSchema.safeParse(data)
+  if (!parsed.success) return { ok: false, error: "invalidInput" }
+  const d = parsed.data
+
+  // Strip empty strings so JSON stays clean.
+  const clean = (obj: Record<string, string | undefined>) =>
+    Object.fromEntries(
+      Object.entries(obj).filter(([, v]) => v && v.length > 0),
+    )
+
+  await prisma.business.update({
+    where: { id: ctx.businessId },
+    data: {
+      socialLinks: clean(d.social),
+      locationUrl: clean(d.location),
+      meetingConfig: { type: d.meeting.type, ...(d.meeting.url ? { url: d.meeting.url } : {}) },
+    },
+  })
+
+  await recordAudit({
+    businessId: ctx.businessId,
+    actorId: ctx.userId,
+    action: "business.publicPage.update",
+    targetType: "business",
+    targetId: ctx.businessId,
+  })
+
+  revalidatePath("/dashboard/settings")
+  return { ok: true }
+}

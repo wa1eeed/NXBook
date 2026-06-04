@@ -17,6 +17,9 @@ export default async function SettingsPage() {
       depositPercent: true,
       cancellationHours: true,
       paymentConfig: true,
+      socialLinks: true,
+      locationUrl: true,
+      meetingConfig: true,
     },
   })
   const domains = await prisma.customDomain.findMany({
@@ -45,6 +48,11 @@ export default async function SettingsPage() {
       ? (business.paymentConfig as { customerMessage?: string })
       : {}
 
+  const asObj = (v: unknown): Record<string, string> =>
+    v && typeof v === "object" && !Array.isArray(v)
+      ? (v as Record<string, string>)
+      : {}
+
   return (
     <SettingsClient
       business={{
@@ -65,6 +73,11 @@ export default async function SettingsPage() {
         provider: gateway?.isActive ? gateway.provider : null,
         isActive: gateway?.isActive ?? false,
         publicKey: gateway?.isActive && gateway.publicKey ? "••••" : null,
+      }}
+      publicPage={{
+        social: asObj(business.socialLinks),
+        location: asObj(business.locationUrl),
+        meeting: asObj(business.meetingConfig),
       }}
     />
   )

@@ -4,7 +4,10 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useLocale, useTranslations } from "next-intl"
 import toast from "react-hot-toast"
-import { Check, Trash2, RefreshCw, CreditCard } from "lucide-react"
+import {
+  Check, Trash2, RefreshCw, CreditCard, Camera, AtSign,
+  Share2, Globe, MessageCircle, MapPin, Video, Hash, Music,
+} from "lucide-react"
 import {
   THEME_PRESETS,
   RADIUS_REM,
@@ -22,6 +25,7 @@ import {
   savePaymentSettingsAction,
   connectGatewayAction,
   disconnectGatewayAction,
+  savePublicPageAction,
 } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -61,8 +65,16 @@ const STATUS_STYLE: Record<string, string> = {
 const RADII: ThemeRadius[] = ["none", "sm", "md", "lg", "xl"]
 const MODES: ThemeMode[] = ["light", "dark"]
 
-type Tab = "profile" | "appearance" | "domains" | "payment"
-const TABS: Tab[] = ["profile", "appearance", "domains", "payment"]
+type Tab = "profile" | "appearance" | "publicPage" | "domains" | "payment"
+const TABS: Tab[] = ["profile", "appearance", "publicPage", "domains", "payment"]
+
+export interface PublicPageData {
+  social: Record<string, string>
+  location: Record<string, string>
+  meeting: Record<string, string>
+}
+
+const MEETING_TYPES = ["in_person", "google_meet", "microsoft_teams", "zoom", "custom"] as const
 
 // Booking-payment gateway catalog. NXBook Pay is the managed option
 // (platform keys, flat fee) and needs no per-tenant credentials; the
@@ -128,12 +140,14 @@ export function SettingsClient({
   initialTheme,
   payment,
   gateway,
+  publicPage,
 }: {
   business: { name: string; brandColor: string; defaultLocale: string }
   domains: DomainRow[]
   initialTheme: ThemeConfig
   payment: PaymentSettings
   gateway: GatewayData
+  publicPage: PublicPageData
 }) {
   const t = useTranslations("settings")
   const ta = useTranslations("settings.appearance")
@@ -159,6 +173,32 @@ export function SettingsClient({
 
   // Gateway connection state — keyed by provider field, per open form.
   const [gatewayForm, setGatewayForm] = useState<Record<string, string>>({})
+
+  // Public-page tab state.
+  const tpp = useTranslations("settings.publicPage")
+  const [social, setSocial] = useState<Record<string, string>>(publicPage.social)
+  const [loc, setLoc] = useState<Record<string, string>>(publicPage.location)
+  const [meetingType, setMeetingType] = useState<string>(
+    publicPage.meeting.type ?? "in_person",
+  )
+  const [meetingUrl, setMeetingUrl] = useState<string>(publicPage.meeting.url ?? "")
+
+  function savePublicPage() {
+    setError("")
+    startTransition(async () => {
+      const res = await savePublicPageAction({
+        social,
+        location: loc,
+        meeting: { type: meetingType as (typeof MEETING_TYPES)[number], url: meetingUrl },
+      })
+      if (res.ok) {
+        toast.success(t("saved"))
+        router.refresh()
+      } else {
+        setError(res.error)
+      }
+    })
+  }
 
   function connectGateway(def: GatewayDef) {
     startTransition(async () => {
@@ -494,6 +534,118 @@ export function SettingsClient({
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {tab === "publicPage" && (
+        <div className="flex flex-col gap-6">
+          {/* Social links */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{tpp("socialTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              {(
+                [
+                  ["instagram", Camera, "https://instagram.com/…"],
+                  ["twitter", AtSign, "https://x.com/…"],
+                  ["tiktok", Music, "https://tiktok.com/@…"],
+                  ["snapchat", Hash, "https://snapchat.com/add/…"],
+                  ["linkedin", Share2, "https://linkedin.com/company/…"],
+                  ["website", Globe, "https://…"],
+                  ["whatsapp", MessageCircle, "+9665…"],
+                ] as [string, typeof Globe, string][]
+              ).map(([key, Icon, ph]) => (
+                <div key={key} className="flex flex-col gap-1.5">
+                  <Label className="flex items-center gap-1.5 text-xs capitalize">
+                    <Icon className="size-3.5" />
+                    {tpp(`social.${key}`)}
+                  </Label>
+                  <Input
+                    value={social[key] ?? ""}
+                    onChange={(e) => setSocial({ ...social, [key]: e.target.value })}
+                    placeholder={ph}
+                    dir="ltr"
+                  />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Location */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MapPin className="size-4" />
+                {tpp("locationTitle")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs">{tpp("googleMaps")}</Label>
+                <Input
+                  value={loc.googleMaps ?? ""}
+                  onChange={(e) => setLoc({ ...loc, googleMaps: e.target.value })}
+                  placeholder="https://maps.google.com/…"
+                  dir="ltr"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs">{tpp("address")}</Label>
+                <Input
+                  value={loc.address ?? ""}
+                  onChange={(e) => setLoc({ ...loc, address: e.target.value })}
+                  placeholder={tpp("addressPlaceholder")}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Meeting type */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Video className="size-4" />
+                {tpp("meetingTitle")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                {MEETING_TYPES.map((mt) => (
+                  <button
+                    key={mt}
+                    type="button"
+                    onClick={() => setMeetingType(mt)}
+                    className={cn(
+                      "rounded-lg border p-3 text-sm font-medium transition-all",
+                      meetingType === mt
+                        ? "border-primary bg-primary/5 text-primary ring-1 ring-primary/30"
+                        : "border-border hover:border-primary/40",
+                    )}
+                  >
+                    {tpp(`meeting.${mt}`)}
+                  </button>
+                ))}
+              </div>
+              {meetingType !== "in_person" && (
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs">{tpp("meetingUrl")}</Label>
+                  <Input
+                    value={meetingUrl}
+                    onChange={(e) => setMeetingUrl(e.target.value)}
+                    placeholder="https://…"
+                    dir="ltr"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {error && <p className="text-sm text-destructive">{t(`error.${error}`)}</p>}
+
+          <Button onClick={savePublicPage} disabled={pending} className="self-start">
+            {pending ? t("saving") : t("save")}
+          </Button>
+        </div>
       )}
 
       {tab === "domains" && (

@@ -410,7 +410,8 @@
       "paymentNotEnabled": "الدفع غير متاح حالياً.",
       "rateLimited": "طلبات كثيرة. حاول بعد قليل.",
       "serviceNotFound": "الخدمة غير موجودة.",
-      "paymentNotRequired": "هذه الخدمة لا تتطلب الدفع أونلاين."
+      "paymentNotRequired": "هذه الخدمة لا تتطلب الدفع أونلاين.",
+      "cannotCancel": "لا يمكن إلغاء هذا الحجز بعد الآن."
     },
     "paymentSummary": "ملخص الدفع",
     "depositAmount": "المبلغ المطلوب مسبقاً",
@@ -431,7 +432,9 @@
     "amountDue": "المبلغ المطلوب الآن",
     "continueToPayment": "المتابعة للدفع",
     "badgePayOnline": "دفع أونلاين",
-    "badgePayOnArrival": "دفع عند الوصول"
+    "badgePayOnArrival": "دفع عند الوصول",
+    "contactWhatsApp": "تواصل عبر واتساب",
+    "viewLocation": "عرض الموقع"
   },
   "bookings": {
     "title": "الحجوزات",
@@ -565,7 +568,8 @@
       "profile": "الملف الشخصي",
       "appearance": "المظهر",
       "domains": "النطاقات",
-      "payment": "الدفع"
+      "payment": "الدفع",
+      "publicPage": "الصفحة العامة"
     },
     "appearance": {
       "title": "المظهر",
@@ -651,6 +655,31 @@
       "gatewayConnected": "تم ربط البوابة",
       "gatewayDisconnected": "تم قطع الاتصال",
       "gatewayError": "فشل الاتصال. تحقق من المفاتيح"
+    },
+    "publicPage": {
+      "socialTitle": "روابط التواصل الاجتماعي",
+      "social": {
+        "instagram": "انستقرام",
+        "twitter": "تويتر / X",
+        "snapchat": "سناب شات",
+        "tiktok": "تيك توك",
+        "linkedin": "لينكدإن",
+        "website": "الموقع الإلكتروني",
+        "whatsapp": "واتساب"
+      },
+      "locationTitle": "الموقع",
+      "googleMaps": "رابط خرائط قوقل",
+      "address": "العنوان",
+      "addressPlaceholder": "الشارع، الحي، المدينة",
+      "meetingTitle": "نوع الاجتماع الافتراضي",
+      "meeting": {
+        "in_person": "حضوري",
+        "google_meet": "Google Meet",
+        "microsoft_teams": "Microsoft Teams",
+        "zoom": "Zoom",
+        "custom": "رابط مخصص"
+      },
+      "meetingUrl": "رابط الاجتماع"
     }
   },
   "customers": {
@@ -1055,5 +1084,28 @@
       "forbidden": "لا تملك الصلاحية.",
       "noSubscription": "لا يوجد اشتراك."
     }
+  },
+  "confirmation": {
+    "title": "تم حجزك!",
+    "subtitle": "تم تأكيد موعدك مع {business}.",
+    "durationMins": "{n} دقيقة",
+    "withStaff": "المختص",
+    "onlineMeeting": "اجتماع أونلاين",
+    "joinMeeting": "انضم للاجتماع",
+    "openInMaps": "افتح في خرائط قوقل",
+    "addToCalendar": "أضف للتقويم",
+    "appleCalendar": "Apple / Outlook",
+    "googleCalendar": "تقويم قوقل",
+    "share": "مشاركة",
+    "email": "البريد",
+    "shareText": "حجزت {service} لدى {business} يوم {date} الساعة {time}.",
+    "emailSubject": "تأكيد حجزي",
+    "cancelBooking": "إلغاء هذا الحجز",
+    "cancelConfirm": "هل أنت متأكد من الإلغاء؟",
+    "keepBooking": "إبقاء الحجز",
+    "confirmCancelBtn": "نعم، إلغاء",
+    "cancelledTitle": "تم إلغاء الحجز",
+    "cancelledBody": "تم إلغاء حجزك. نتمنى رؤيتك قريباً.",
+    "bookAgain": "احجز مرة أخرى"
   }
 }

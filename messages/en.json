@@ -410,7 +410,8 @@
       "paymentNotEnabled": "Payment is not available right now.",
       "rateLimited": "Too many requests. Please try again shortly.",
       "serviceNotFound": "Service not found.",
-      "paymentNotRequired": "This service doesn't require online payment."
+      "paymentNotRequired": "This service doesn't require online payment.",
+      "cannotCancel": "This booking can no longer be cancelled."
     },
     "paymentSummary": "Payment summary",
     "depositAmount": "Deposit required",
@@ -431,7 +432,9 @@
     "amountDue": "Amount due now",
     "continueToPayment": "Continue to payment",
     "badgePayOnline": "Pay online",
-    "badgePayOnArrival": "Pay on arrival"
+    "badgePayOnArrival": "Pay on arrival",
+    "contactWhatsApp": "Contact on WhatsApp",
+    "viewLocation": "View location"
   },
   "bookings": {
     "title": "Bookings",
@@ -565,7 +568,8 @@
       "profile": "Profile",
       "appearance": "Appearance",
       "domains": "Domains",
-      "payment": "Payment"
+      "payment": "Payment",
+      "publicPage": "Public Page"
     },
     "appearance": {
       "title": "Appearance",
@@ -651,6 +655,31 @@
       "gatewayConnected": "Gateway connected",
       "gatewayDisconnected": "Gateway disconnected",
       "gatewayError": "Connection failed. Check your keys."
+    },
+    "publicPage": {
+      "socialTitle": "Social media links",
+      "social": {
+        "instagram": "Instagram",
+        "twitter": "Twitter / X",
+        "snapchat": "Snapchat",
+        "tiktok": "TikTok",
+        "linkedin": "LinkedIn",
+        "website": "Website",
+        "whatsapp": "WhatsApp"
+      },
+      "locationTitle": "Location",
+      "googleMaps": "Google Maps link",
+      "address": "Address",
+      "addressPlaceholder": "Street, district, city",
+      "meetingTitle": "Default meeting type",
+      "meeting": {
+        "in_person": "In person",
+        "google_meet": "Google Meet",
+        "microsoft_teams": "Microsoft Teams",
+        "zoom": "Zoom",
+        "custom": "Custom link"
+      },
+      "meetingUrl": "Meeting link"
     }
   },
   "customers": {
@@ -1055,5 +1084,28 @@
       "forbidden": "You don't have permission.",
       "noSubscription": "No subscription found."
     }
+  },
+  "confirmation": {
+    "title": "You're booked!",
+    "subtitle": "Your appointment with {business} is confirmed.",
+    "durationMins": "{n} minutes",
+    "withStaff": "Your specialist",
+    "onlineMeeting": "Online meeting",
+    "joinMeeting": "Join meeting",
+    "openInMaps": "Open in Google Maps",
+    "addToCalendar": "Add to calendar",
+    "appleCalendar": "Apple / Outlook",
+    "googleCalendar": "Google Calendar",
+    "share": "Share",
+    "email": "Email",
+    "shareText": "I booked {service} at {business} on {date} at {time}.",
+    "emailSubject": "My booking confirmation",
+    "cancelBooking": "Cancel this booking",
+    "cancelConfirm": "Are you sure you want to cancel?",
+    "keepBooking": "Keep booking",
+    "confirmCancelBtn": "Yes, cancel",
+    "cancelledTitle": "Booking cancelled",
+    "cancelledBody": "Your booking has been cancelled. We hope to see you again soon.",
+    "bookAgain": "Book again"
   }
 }
