@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { getTranslations } from "next-intl/server"
 import { CalendarCheck, ExternalLink } from "lucide-react"
 import { requireBusiness } from "@/lib/tenant"
@@ -12,6 +13,8 @@ import { logoutAction } from "@/lib/auth-actions"
 import { Button } from "@/components/ui/button"
 import { DashboardPageTransition } from "@/components/dashboard/page-transition"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
+import { SubscriptionBanner } from "@/components/dashboard/subscription-banner"
+import { checkSubscriptionAccess } from "@/lib/subscription-guard"
 
 // Protected dashboard shell: resolves the tenant once, applies the
 // business theme (CSS vars), renders the sidebar (desktop) / drawer
@@ -30,6 +33,22 @@ export default async function DashboardLayout({
     select: { name: true, slug: true, themeConfig: true },
   })
   const theme = resolveTheme(business?.themeConfig)
+
+  // Subscription enforcement (Phase 4): hard-block EXPIRED / SUSPENDED,
+  // show a warning banner for TRIALING (near end) / GRACE_PERIOD.
+  const access = await checkSubscriptionAccess(ctx.businessId)
+  if (access.status === "EXPIRED") {
+    redirect("/pricing?reason=trial_expired")
+  }
+  if (access.status === "SUSPENDED") {
+    redirect("/pricing?reason=suspended")
+  }
+  const bannerProps =
+    access.status === "GRACE_PERIOD"
+      ? { status: "GRACE_PERIOD" as const, hoursLeft: access.hoursLeft }
+      : access.status === "TRIALING"
+        ? { status: "TRIALING" as const, daysLeft: access.daysLeft }
+        : null
 
   return (
     <ThemeScope theme={theme} className="flex min-h-screen">
@@ -67,6 +86,7 @@ export default async function DashboardLayout({
             </form>
           </div>
         </header>
+        {bannerProps && <SubscriptionBanner {...bannerProps} />}
         <main className="flex-1 p-4 sm:p-6">
           <DashboardPageTransition>{children}</DashboardPageTransition>
         </main>

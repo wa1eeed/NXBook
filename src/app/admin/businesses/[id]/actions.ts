@@ -81,3 +81,40 @@ export async function changePlanAction(
   revalidatePath("/admin/businesses")
   return { ok: true }
 }
+
+// Extend a business's trial by N days (admin override).
+export async function extendTrialAction(
+  businessId: string,
+  days: number,
+): Promise<ActionResult> {
+  const admin = await requireSuperAdmin()
+  if (days < 1 || days > 90) return { ok: false, error: "invalid" }
+
+  const sub = await prisma.subscription.findUnique({ where: { businessId } })
+  if (!sub) return { ok: false, error: "notFound" }
+
+  // Extend from the later of (current trial end | now).
+  const base =
+    sub.trialEndsAt && sub.trialEndsAt.getTime() > Date.now()
+      ? sub.trialEndsAt
+      : new Date()
+  const newEnd = new Date(base.getTime() + days * 24 * 60 * 60 * 1000)
+
+  await prisma.subscription.update({
+    where: { businessId },
+    data: { trialEndsAt: newEnd, status: "TRIALING" },
+  })
+
+  await recordAudit({
+    businessId,
+    actorId: admin.userId,
+    actorEmail: admin.email,
+    action: "admin.business.extendTrial",
+    targetType: "subscription",
+    targetId: sub.id,
+    metadata: { days, newTrialEnd: newEnd.toISOString() },
+  })
+
+  revalidatePath(`/admin/businesses/${businessId}`)
+  return { ok: true }
+}

@@ -247,7 +247,8 @@
       "brandItDesc": "Upload a logo and pick a brand color for the booking page.",
       "share": "Share your booking link",
       "shareDesc": "Open your public page and send it to your first customers."
-    }
+    },
+    "billing": "Billing"
   },
   "services": {
     "title": "Services",
@@ -355,7 +356,7 @@
   "pricing": {
     "title": "Pricing",
     "subtitle": "Choose the plan that fits your business. Upgrade anytime.",
-    "perMonth": "SAR / month",
+    "perMonth": "/ month",
     "popular": "Popular",
     "subscribe": "Subscribe",
     "getStarted": "Get started",
@@ -366,7 +367,15 @@
       "paymentsNotConfigured": "Payments aren't configured yet (add your Moyasar keys).",
       "noCheckoutUrl": "Couldn't start checkout.",
       "checkoutFailed": "Checkout failed. Please try again."
-    }
+    },
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "savePercent": "Save {n}%",
+    "billedYearly": "Billed {total} SAR / year",
+    "trialExpiredTitle": "Your free trial has ended",
+    "trialExpiredBody": "Choose a plan to regain access to your dashboard. Your data is safe.",
+    "suspendedTitle": "Your subscription is inactive",
+    "suspendedBody": "Re-subscribe to a plan to restore full access to your dashboard."
   },
   "booking": {
     "chooseService": "Choose a service",
@@ -1009,5 +1018,42 @@
     "prev": "Previous",
     "next": "Next",
     "page": "Page {n}"
+  },
+  "billing": {
+    "title": "Billing & Subscription",
+    "subtitle": "Manage your plan, renewal, and invoices.",
+    "noSubscription": "You don't have an active subscription yet.",
+    "choosePlan": "Choose a plan",
+    "currentPlan": "Current plan",
+    "perMonth": "/mo",
+    "renewsOn": "Renews on {date}",
+    "endsOn": "Ends on {date}",
+    "trialEnds": "Trial ends {date}",
+    "willCancel": "Your subscription will end on {date} and won't renew.",
+    "changePlan": "Change plan",
+    "cancelSubscription": "Cancel subscription",
+    "resume": "Resume subscription",
+    "cancelled": "Subscription cancelled",
+    "resumed": "Subscription resumed",
+    "confirmCancelTitle": "Cancel your subscription?",
+    "confirmCancelBody": "You'll keep access until {date}. After that your dashboard will be locked until you re-subscribe.",
+    "keepSubscription": "Keep subscription",
+    "confirmCancelButton": "Yes, cancel",
+    "invoiceHistory": "Invoice history",
+    "noInvoices": "No invoices yet.",
+    "invoiceDate": "Date",
+    "invoiceAmount": "Amount",
+    "invoiceStatus": "Status",
+    "paid": "Paid",
+    "status": {
+      "ACTIVE": "Active",
+      "TRIALING": "Trial",
+      "PAST_DUE": "Past due",
+      "CANCELLED": "Cancelled"
+    },
+    "error": {
+      "forbidden": "You don't have permission.",
+      "noSubscription": "No subscription found."
+    }
   }
 }

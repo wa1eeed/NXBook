@@ -247,7 +247,8 @@
       "brandItDesc": "ارفع شعارك واختر لون علامتك التجارية لصفحة الحجز.",
       "share": "شارك رابط الحجز",
       "shareDesc": "افتح صفحتك العامة وأرسلها لأول عملائك."
-    }
+    },
+    "billing": "الفوترة"
   },
   "services": {
     "title": "الخدمات",
@@ -355,7 +356,7 @@
   "pricing": {
     "title": "الأسعار",
     "subtitle": "اختر الباقة المناسبة لنشاطك. يمكنك الترقية في أي وقت.",
-    "perMonth": "ريال / شهرياً",
+    "perMonth": "/ شهرياً",
     "popular": "الأكثر طلباً",
     "subscribe": "اشترك",
     "getStarted": "ابدأ الآن",
@@ -366,7 +367,15 @@
       "paymentsNotConfigured": "المدفوعات غير مهيأة بعد (أضف مفاتيح Moyasar).",
       "noCheckoutUrl": "تعذّر بدء الدفع.",
       "checkoutFailed": "فشل الدفع. حاول مرة أخرى."
-    }
+    },
+    "monthly": "شهري",
+    "yearly": "سنوي",
+    "savePercent": "وفّر {n}%",
+    "billedYearly": "تُحتسب {total} ريال / سنوياً",
+    "trialExpiredTitle": "انتهت فترتك التجريبية المجانية",
+    "trialExpiredBody": "اختر باقة لاستعادة الوصول للوحة تحكمك. بياناتك محفوظة.",
+    "suspendedTitle": "اشتراكك غير فعّال",
+    "suspendedBody": "أعد الاشتراك في باقة لاستعادة الوصول الكامل للوحة تحكمك."
   },
   "booking": {
     "chooseService": "اختر خدمة",
@@ -1009,5 +1018,42 @@
     "prev": "السابق",
     "next": "التالي",
     "page": "صفحة {n}"
+  },
+  "billing": {
+    "title": "الفوترة والاشتراك",
+    "subtitle": "أدر باقتك والتجديد والفواتير.",
+    "noSubscription": "ليس لديك اشتراك فعّال بعد.",
+    "choosePlan": "اختر باقة",
+    "currentPlan": "الباقة الحالية",
+    "perMonth": "/شهرياً",
+    "renewsOn": "يتجدد في {date}",
+    "endsOn": "ينتهي في {date}",
+    "trialEnds": "تنتهي التجربة في {date}",
+    "willCancel": "سينتهي اشتراكك في {date} ولن يتجدد.",
+    "changePlan": "تغيير الباقة",
+    "cancelSubscription": "إلغاء الاشتراك",
+    "resume": "استئناف الاشتراك",
+    "cancelled": "تم إلغاء الاشتراك",
+    "resumed": "تم استئناف الاشتراك",
+    "confirmCancelTitle": "إلغاء اشتراكك؟",
+    "confirmCancelBody": "ستحتفظ بالوصول حتى {date}. بعد ذلك ستُقفل لوحة التحكم حتى تعيد الاشتراك.",
+    "keepSubscription": "إبقاء الاشتراك",
+    "confirmCancelButton": "نعم، إلغاء",
+    "invoiceHistory": "سجل الفواتير",
+    "noInvoices": "لا توجد فواتير بعد.",
+    "invoiceDate": "التاريخ",
+    "invoiceAmount": "المبلغ",
+    "invoiceStatus": "الحالة",
+    "paid": "مدفوعة",
+    "status": {
+      "ACTIVE": "فعّال",
+      "TRIALING": "تجريبي",
+      "PAST_DUE": "متأخر",
+      "CANCELLED": "ملغي"
+    },
+    "error": {
+      "forbidden": "لا تملك الصلاحية.",
+      "noSubscription": "لا يوجد اشتراك."
+    }
   }
 }

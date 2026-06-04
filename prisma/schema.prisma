@@ -328,6 +328,8 @@ model Subscription {
   currentPeriodEnd   DateTime
   cancelAtPeriodEnd  Boolean            @default(false)
   moyasarSubId       String?
+  // Subscription enforcement fields (Phase 4)
+  gracePeriodHours   Int                @default(48)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   business           Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
