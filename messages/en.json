@@ -781,7 +781,8 @@
       "businesses": "Businesses",
       "plans": "Plans",
       "queues": "Queues",
-      "customers": "Customers"
+      "customers": "Customers",
+      "subscriptions": "Subscriptions"
     },
     "overview": {
       "title": "Platform overview",
@@ -975,7 +976,35 @@
       "gatewayTitle": "Payment gateway",
       "gatewayProvider": "Provider",
       "gatewayActive": "Active",
-      "gatewayNone": "No payment gateway connected."
+      "gatewayNone": "No payment gateway connected.",
+      "extendTrial": "Extend trial",
+      "extendTrialHint": "Add 14 days to this business's trial",
+      "trialExtended": "Trial extended by {days} days"
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "subtitle": "All tenant subscriptions across the platform.",
+      "kpiActive": "Active",
+      "kpiTrialing": "Trialing",
+      "kpiCancelled": "Cancelled",
+      "kpiMrr": "MRR",
+      "kpiUpcoming": "Renewals (7d)",
+      "filterAll": "All",
+      "search": "Search business…",
+      "empty": "No subscriptions match.",
+      "colBusiness": "Business",
+      "colPlan": "Plan",
+      "colStatus": "Status",
+      "colRenewal": "Renewal / trial",
+      "colMrr": "MRR",
+      "ending": "(ending)",
+      "trialEnds": "Trial ends",
+      "status": {
+        "ACTIVE": "Active",
+        "TRIALING": "Trial",
+        "PAST_DUE": "Past due",
+        "CANCELLED": "Cancelled"
+      }
     }
   },
   "status": {

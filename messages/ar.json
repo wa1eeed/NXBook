@@ -781,7 +781,8 @@
       "businesses": "الأنشطة",
       "plans": "الباقات",
       "queues": "الطوابير",
-      "customers": "العملاء"
+      "customers": "العملاء",
+      "subscriptions": "الاشتراكات"
     },
     "overview": {
       "title": "نظرة عامة على المنصّة",
@@ -975,7 +976,35 @@
       "gatewayTitle": "بوابة الدفع",
       "gatewayProvider": "البوابة",
       "gatewayActive": "نشطة",
-      "gatewayNone": "لا بوابة دفع مربوطة."
+      "gatewayNone": "لا بوابة دفع مربوطة.",
+      "extendTrial": "تمديد التجربة",
+      "extendTrialHint": "أضف 14 يوماً لتجربة هذا النشاط",
+      "trialExtended": "تم تمديد التجربة {days} يوماً"
+    },
+    "subscriptions": {
+      "title": "الاشتراكات",
+      "subtitle": "كل اشتراكات العملاء عبر المنصة.",
+      "kpiActive": "فعّال",
+      "kpiTrialing": "تجريبي",
+      "kpiCancelled": "ملغي",
+      "kpiMrr": "الإيراد الشهري",
+      "kpiUpcoming": "تجديدات (7 أيام)",
+      "filterAll": "الكل",
+      "search": "ابحث عن نشاط…",
+      "empty": "لا توجد اشتراكات مطابقة.",
+      "colBusiness": "النشاط",
+      "colPlan": "الباقة",
+      "colStatus": "الحالة",
+      "colRenewal": "التجديد / التجربة",
+      "colMrr": "الإيراد الشهري",
+      "ending": "(ينتهي)",
+      "trialEnds": "تنتهي التجربة",
+      "status": {
+        "ACTIVE": "فعّال",
+        "TRIALING": "تجريبي",
+        "PAST_DUE": "متأخر",
+        "CANCELLED": "ملغي"
+      }
     }
   },
   "status": {

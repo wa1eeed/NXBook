@@ -10,6 +10,7 @@ import {
   CreditCard,
   ListTree,
   UsersRound,
+  Repeat,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -17,6 +18,7 @@ const NAV = [
   { href: "/admin", key: "overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/businesses", key: "businesses", icon: Building2, exact: false },
   { href: "/admin/customers", key: "customers", icon: UsersRound, exact: false },
+  { href: "/admin/subscriptions", key: "subscriptions", icon: Repeat, exact: false },
   { href: "/admin/plans", key: "plans", icon: CreditCard, exact: false },
   { href: "/admin/queues", key: "queues", icon: ListTree, exact: false },
 ] as const

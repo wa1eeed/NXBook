@@ -16,6 +16,7 @@ import {
 import {
   setBusinessActiveAction,
   changePlanAction,
+  extendTrialAction,
 } from "./actions"
 import type { BusinessDetailData } from "./data"
 import { Button } from "@/components/ui/button"
@@ -119,6 +120,17 @@ export function BusinessDetailClient({ data }: { data: BusinessDetailData }) {
     })
   }
 
+  function handleExtendTrial(days: number) {
+    startTransition(async () => {
+      const res = await extendTrialAction(data.id, days)
+      if (res.ok) {
+        toast.success(t("trialExtended", { days }))
+      } else {
+        toast.error(t("actionFailed"))
+      }
+    })
+  }
+
   // Filtered bookings for the bookings tab
   const filteredBookings =
     bookingFilter === "ALL"
@@ -191,6 +203,15 @@ export function BusinessDetailClient({ data }: { data: BusinessDetailData }) {
             className={cn(data.isActive && "text-destructive")}
           >
             {data.isActive ? t("deactivate") : t("activate")}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={pending}
+            onClick={() => handleExtendTrial(14)}
+            title={t("extendTrialHint")}
+          >
+            {t("extendTrial")}
           </Button>
           <div className="relative">
             <Button
