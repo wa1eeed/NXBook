@@ -1,7 +1,9 @@
-// ONE-TIME migration endpoint — DELETE THIS FILE after use.
-// Protected by MIGRATION_SECRET env var (set in Coolify before calling).
-// Applies the 20260601090000_service_payment_mode migration manually
-// when prisma migrate deploy can't run it automatically.
+// ONE-TIME migration endpoint — safe to call repeatedly (idempotent).
+// Applies any pending NXBook migrations that `prisma migrate deploy`
+// didn't pick up, and records them in _prisma_migrations so future
+// deploys skip them. DELETE THIS FILE once production is healthy.
+//
+// Auth: x-migration-secret header (env MIGRATION_SECRET or the fallback).
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
@@ -9,77 +11,95 @@ import { prisma } from "@/lib/prisma"
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
+// Each migration: name + an idempotent list of SQL statements. Every
+// statement is written so re-running is a no-op (IF NOT EXISTS guards).
+const MIGRATIONS: { name: string; statements: string[] }[] = [
+  {
+    name: "20260604120000_in_app_notifications",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS "InAppNotification" (
+        "id" TEXT NOT NULL,
+        "businessId" TEXT NOT NULL,
+        "type" TEXT NOT NULL,
+        "title" TEXT NOT NULL,
+        "body" TEXT NOT NULL,
+        "isRead" BOOLEAN NOT NULL DEFAULT false,
+        "metadata" JSONB,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "InAppNotification_pkey" PRIMARY KEY ("id")
+      )`,
+      `DO $do$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints
+          WHERE constraint_name = 'InAppNotification_businessId_fkey'
+        ) THEN
+          ALTER TABLE "InAppNotification"
+            ADD CONSTRAINT "InAppNotification_businessId_fkey"
+            FOREIGN KEY ("businessId") REFERENCES "Business"("id")
+            ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+      END $do$`,
+      `CREATE INDEX IF NOT EXISTS "InAppNotification_businessId_isRead_idx" ON "InAppNotification"("businessId", "isRead")`,
+      `CREATE INDEX IF NOT EXISTS "InAppNotification_businessId_createdAt_idx" ON "InAppNotification"("businessId", "createdAt")`,
+    ],
+  },
+  {
+    name: "20260604130000_subscription_enforcement",
+    statements: [
+      `ALTER TABLE "Subscription" ADD COLUMN IF NOT EXISTS "gracePeriodHours" INTEGER NOT NULL DEFAULT 48`,
+    ],
+  },
+  {
+    name: "20260604140000_business_public_config",
+    statements: [
+      `ALTER TABLE "Business" ADD COLUMN IF NOT EXISTS "socialLinks" JSONB`,
+      `ALTER TABLE "Business" ADD COLUMN IF NOT EXISTS "locationUrl" JSONB`,
+      `ALTER TABLE "Business" ADD COLUMN IF NOT EXISTS "meetingConfig" JSONB`,
+    ],
+  },
+]
+
 export async function POST(req: Request) {
-  // ── Auth guard ──────────────────────────────────────────────
   const secret = process.env.MIGRATION_SECRET ?? "nxbook-migrate-paymentmode-2026"
   const auth = req.headers.get("x-migration-secret")
   if (auth !== secret) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
 
-  const results: string[] = []
+  const results: Record<string, string> = {}
 
   try {
-    // ── 1. Check if already applied ─────────────────────────
-    const cols = await prisma.$queryRaw<Array<{ column_name: string }>>`
-      SELECT column_name FROM information_schema.columns
-      WHERE table_name = 'Service' AND column_name = 'paymentMode'
+    // Which migrations are already recorded?
+    const applied = await prisma.$queryRaw<Array<{ migration_name: string }>>`
+      SELECT migration_name FROM _prisma_migrations
     `
-    if (cols.length > 0) {
-      return NextResponse.json({
-        ok: true,
-        message: "paymentMode column already exists — nothing to do.",
-      })
+    const appliedSet = new Set(applied.map((r) => r.migration_name))
+
+    for (const mig of MIGRATIONS) {
+      if (appliedSet.has(mig.name)) {
+        results[mig.name] = "already recorded"
+        continue
+      }
+
+      // Run each idempotent statement.
+      for (const sql of mig.statements) {
+        await prisma.$executeRawUnsafe(sql)
+      }
+
+      // Record it so prisma migrate deploy won't try again.
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO "_prisma_migrations"
+          (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, applied_steps_count)
+         VALUES (gen_random_uuid(), 'manual-apply', now(), $1, null, null, now(), 1)
+         ON CONFLICT (migration_name) DO NOTHING`,
+        mig.name,
+      )
+      results[mig.name] = "applied ✓"
     }
 
-    // ── 2. Create enum ───────────────────────────────────────
-    await prisma.$executeRawUnsafe(
-      `CREATE TYPE "ServicePaymentMode" AS ENUM ('ON_ARRIVAL', 'ONLINE')`
-    )
-    results.push("✓ Created enum ServicePaymentMode")
-
-    // ── 3. Add column ────────────────────────────────────────
-    await prisma.$executeRawUnsafe(
-      `ALTER TABLE "Service"
-         ADD COLUMN "paymentMode" "ServicePaymentMode" NOT NULL DEFAULT 'ON_ARRIVAL'`
-    )
-    results.push("✓ Added Service.paymentMode column")
-
-    // ── 4. De-duplicate availability rows ───────────────────
-    const deleted = await prisma.$executeRawUnsafe(
-      `DELETE FROM "ServiceAvailability" a
-       USING  "ServiceAvailability" b
-       WHERE  a.id > b.id
-         AND  a."serviceId"  = b."serviceId"
-         AND  a."dayOfWeek"  = b."dayOfWeek"
-         AND  a."startTime"  = b."startTime"`
-    )
-    results.push(`✓ Removed ${deleted} duplicate availability rows`)
-
-    // ── 5. Unique index ──────────────────────────────────────
-    await prisma.$executeRawUnsafe(
-      `CREATE UNIQUE INDEX "ServiceAvailability_serviceId_dayOfWeek_startTime_key"
-         ON "ServiceAvailability"("serviceId", "dayOfWeek", "startTime")`
-    )
-    results.push("✓ Created unique index on ServiceAvailability")
-
-    // ── 6. Record in _prisma_migrations so deploy doesn't re-run it
-    await prisma.$executeRawUnsafe(`
-      INSERT INTO "_prisma_migrations"
-        (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, applied_steps_count)
-      VALUES
-        (gen_random_uuid(),
-         'manual-apply-20260601090000',
-         now(),
-         '20260601090000_service_payment_mode',
-         null, null, now(), 1)
-      ON CONFLICT (migration_name) DO NOTHING
-    `)
-    results.push("✓ Recorded migration in _prisma_migrations")
-
-    return NextResponse.json({ ok: true, steps: results })
+    return NextResponse.json({ ok: true, results })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ ok: false, error: msg, completed: results }, { status: 500 })
+    return NextResponse.json({ ok: false, error: msg, partial: results }, { status: 500 })
   }
 }

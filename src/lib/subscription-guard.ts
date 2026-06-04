@@ -21,10 +21,15 @@ export type SubscriptionAccess =
 export async function checkSubscriptionAccess(
   businessId: string,
 ): Promise<SubscriptionAccess> {
-  const sub = await prisma.subscription.findUnique({
-    where: { businessId },
-    include: { plan: { select: { isTrialUpgradeForced: true } } },
-  })
+  // FAIL-OPEN: the subscription guard must NEVER hard-crash the dashboard.
+  // If the query fails (e.g. a pending migration during a deploy window),
+  // grant access rather than locking every tenant out.
+  const sub = await prisma.subscription
+    .findUnique({
+      where: { businessId },
+      include: { plan: { select: { isTrialUpgradeForced: true } } },
+    })
+    .catch(() => null)
 
   if (!sub) return { status: "NO_SUBSCRIPTION" }
 
