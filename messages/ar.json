@@ -507,7 +507,9 @@
     "calWeek": "أسبوع",
     "calDay": "يوم",
     "calAddForDay": "إضافة حجز لهذا اليوم",
-    "calWaitlistLegend": "قائمة الانتظار"
+    "calWaitlistLegend": "قائمة الانتظار",
+    "sendConfirmation": "إرسال تأكيد للعميل",
+    "sendConfirmationHint": "تأكيد واتساب + تذكيرات (قبل 24 ساعة وساعة)"
   },
   "waitlist": {
     "confirmed": "تم تأكيد حجزك!",

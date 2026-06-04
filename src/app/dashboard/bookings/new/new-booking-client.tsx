@@ -47,10 +47,11 @@ export function NewBookingClient({
 
   const [step, setStep] = useState(1)
   const [serviceId, setServiceId] = useState("")
-  const [date, setDate] = useState("")
+  const [date, setDate] = useState(params.get("date") ?? "")
   const [slots, setSlots] = useState<Slot[] | null>(null)
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [startTime, setStartTime] = useState("")
+  const [sendConfirmation, setSendConfirmation] = useState(true)
 
   // Customer selection.
   const [customerId, setCustomerId] = useState<string | null>(
@@ -113,6 +114,7 @@ export function NewBookingClient({
             }
           : undefined,
         notes: notes.trim() || undefined,
+        sendConfirmation,
       })
       if (res.ok) {
         toast.success(t("toast.confirm"))
@@ -332,6 +334,22 @@ export function NewBookingClient({
                   placeholder={tc("notesPlaceholder")}
                 />
               </div>
+
+              {/* Send-confirmation toggle */}
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-border p-3">
+                <div>
+                  <p className="text-sm font-medium">{t("sendConfirmation")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("sendConfirmationHint")}
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={sendConfirmation}
+                  onChange={(e) => setSendConfirmation(e.target.checked)}
+                  className="size-5 accent-primary"
+                />
+              </label>
             </div>
           )}
 

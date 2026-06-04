@@ -507,7 +507,9 @@
     "calWeek": "Week",
     "calDay": "Day",
     "calAddForDay": "Add booking for this day",
-    "calWaitlistLegend": "Waitlist"
+    "calWaitlistLegend": "Waitlist",
+    "sendConfirmation": "Send confirmation to customer",
+    "sendConfirmationHint": "WhatsApp confirmation + reminders (24h & 1h before)"
   },
   "waitlist": {
     "confirmed": "Your booking is confirmed!",

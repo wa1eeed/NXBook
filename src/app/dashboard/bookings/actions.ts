@@ -120,6 +120,7 @@ interface ManualBookingInput {
   customerId?: string
   newCustomer?: { name: string; phone: string; email?: string }
   notes?: string
+  sendConfirmation?: boolean
 }
 
 export async function createManualBookingAction(
@@ -172,6 +173,16 @@ export async function createManualBookingAction(
     bookedVia: "dashboard",
   })
   if (!result.ok) return { ok: false, error: result.error }
+
+  // Optionally fire the customer confirmation + reminders (best-effort).
+  if (input.sendConfirmation) {
+    try {
+      const { onBookingCreated } = await import("@/lib/booking-lifecycle")
+      await onBookingCreated(result.bookingId)
+    } catch {
+      // notifications must never fail the booking
+    }
+  }
 
   await recordAudit({
     businessId: ctx.businessId,
