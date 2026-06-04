@@ -13,6 +13,7 @@ import { dispatchWhatsApp } from "@/lib/notify"
 import { bookingConfirmationBody } from "@/lib/messages-templates"
 import { offerNextInLine } from "@/lib/waitlist"
 import { recordAudit } from "@/lib/audit"
+import { createNotification } from "@/lib/notifications-center"
 import {
   reminderQueue,
   notificationQueue,
@@ -42,6 +43,15 @@ export async function onBookingCreated(bookingId: string): Promise<void> {
       ? booking.service.nameAr
       : booking.service.nameEn
   const dateStr = booking.date.toISOString().slice(0, 10)
+
+  // In-app notification (best-effort, never throws)
+  void createNotification({
+    businessId: booking.businessId,
+    type: "BOOKING_NEW",
+    title: `New booking — ${booking.customer.name}`,
+    body: `${serviceName} · ${dateStr} ${booking.startTime}`,
+    metadata: { bookingId, customerId: booking.customerId },
+  })
 
   // Immediate confirmation.
   await dispatchWhatsApp({
@@ -170,6 +180,13 @@ export async function cancelBooking(
     targetId: bookingId,
     metadata: reason ? { reason } : undefined,
   })
+  void createNotification({
+    businessId,
+    type: "BOOKING_CANCELLED",
+    title: "Booking cancelled",
+    body: reason ? `Reason: ${reason}` : "A booking was cancelled",
+    metadata: { bookingId, customerId: b.customerId },
+  })
   return { ok: true }
 }
 
@@ -197,6 +214,13 @@ export async function noShowBooking(
 
   // A no-show frees the slot too — offer it onward.
   await freeSlotAndOfferWaitlist(b)
+  void createNotification({
+    businessId,
+    type: "NO_SHOW",
+    title: "Customer no-show recorded",
+    body: `A customer did not show up for their appointment`,
+    metadata: { bookingId, customerId: b.customerId },
+  })
   await recordAudit({
     businessId,
     action: "booking.no_show",

@@ -208,7 +208,8 @@ model Business {
   depositPercent    Int       @default(0)
   cancellationHours Int       @default(24)
   transactions      Transaction[]
-  paymentGateway    PaymentGateway?
+  paymentGateway       PaymentGateway?
+  inAppNotifications   InAppNotification[]
   @@index([slug])
 }
 
@@ -570,6 +571,22 @@ model Waitlist {
   @@index([businessId])
   @@index([serviceId, date, slotTime])
   @@index([status])
+}
+
+// In-app notification center for tenant dashboards.
+// Separate from NotificationLog (which tracks SMS/WhatsApp/email to customers).
+model InAppNotification {
+  id         String   @id @default(cuid())
+  businessId String
+  type       String   // BOOKING_NEW | BOOKING_CONFIRMED | BOOKING_ATTENDED | NO_SHOW | WAITLIST_OFFER | PAYMENT_RECEIVED | AGENT_RUN
+  title      String
+  body       String
+  isRead     Boolean  @default(false)
+  metadata   Json?    // { bookingId?, customerId?, agentType?, amount? }
+  createdAt  DateTime @default(now())
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@index([businessId, isRead])
+  @@index([businessId, createdAt])
 }
 
 model Agent {

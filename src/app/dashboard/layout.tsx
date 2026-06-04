@@ -11,6 +11,7 @@ import { LocaleSwitcher } from "@/components/locale-switcher"
 import { logoutAction } from "@/lib/auth-actions"
 import { Button } from "@/components/ui/button"
 import { DashboardPageTransition } from "@/components/dashboard/page-transition"
+import { NotificationBell } from "@/components/dashboard/notification-bell"
 
 // Protected dashboard shell: resolves the tenant once, applies the
 // business theme (CSS vars), renders the sidebar (desktop) / drawer
@@ -58,6 +59,7 @@ export default async function DashboardLayout({
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <LocaleSwitcher />
+            <NotificationBell />
             <form action={logoutAction}>
               <Button variant="outline" size="sm">
                 {td("logout")}

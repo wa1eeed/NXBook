@@ -994,5 +994,20 @@
       "notFound": "Transaction not found.",
       "refundFailed": "Could not process refund."
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Your recent activity and alerts.",
+    "bellLabel": "Notifications",
+    "unreadCount": "{n} unread",
+    "markAllRead": "Mark all as read",
+    "markedAllRead": "All notifications marked as read",
+    "viewAll": "View all notifications",
+    "empty": "No notifications yet",
+    "filterAll": "All",
+    "search": "Search…",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page {n}"
   }
 }
